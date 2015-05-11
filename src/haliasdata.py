@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """
-A module for handling Halias RDF dataset
+Create simple data files from Halias RDF dataset for association analysis
 """
+from collections import defaultdict
 
 from rdflib import Graph, RDF, RDFS, Namespace
 
@@ -29,10 +30,42 @@ nsHaliasTaxa = Namespace("http://www.yso.fi/onto/bio/")
 taxon_ontology = Graph()
 taxon_ontology.parse(DATA_DIR + 'halias_taxon_ontology.ttl', format='turtle')
 
+taxon_map = dict()
+
 taxa = taxon_ontology.subjects(RDF.type, nsTaxMeOn["TaxonInChecklist"])
 for taxon in taxa:
     labels = taxon_ontology.objects(taxon, RDFS.label)
-    if nsRanks["Species"] in taxon_ontology.objects(taxon, RDF.type):
-        for label in labels:
-            if label.language == 'en':
-                print(label)
+#    if nsRanks["Species"] in taxon_ontology.objects(taxon, RDF.type):
+    for label in labels:
+        if label.language == 'fi':
+            taxon_map[unicode(taxon)] = unicode(label)
+            print "%s - %s" % (unicode(taxon), unicode(label))
+            if ',' in unicode(label):
+                # Not allowed in our basket format
+                raise Exception('Illegal character')
+#                print(label)
+
+bird_observation_graph = Graph()
+bird_observation_graph.parse(DATA_DIR + 'HALIAS4_full.ttl', format='turtle')
+
+observations = bird_observation_graph.subjects(RDF.type, nsDataCube["Observation"])
+
+observation_date = defaultdict(list)
+
+for observation in observations:
+#    for label in bird_observation_graph.objects(observation, RDFS.label):
+    taxon = next(bird_observation_graph.objects(observation, nsHaliasSchema['observedSpecies']))
+    for date in bird_observation_graph.objects(observation, nsHaliasSchema['refTime']):
+        observation_date[str(date)].append(taxon_map[unicode(taxon)])
+
+#import pprint
+#pprint.pprint(list(observation_date.items())[:10])
+
+f = open(DATA_DIR + 'observation.basket', 'w')
+
+for (date, obs_list) in sorted(observation_date.iteritems()):
+    row = u", ".join(obs_list) + u"\n"
+    #print row
+    f.write(row.encode('utf8'))
+
+f.close()
