@@ -60,7 +60,7 @@ observations = bird_observation_graph.subjects(RDF.type, nsDataCube["Observation
 
 observation_date = defaultdict(list)
 
-print 'Processing %s observations...' % len(observations)
+print 'Processing observations...'
 
 for i, observation in enumerate(observations):
 #    for label in bird_observation_graph.objects(observation, RDFS.label):
