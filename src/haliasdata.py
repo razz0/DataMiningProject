@@ -8,7 +8,11 @@ from collections import defaultdict
 from rdflib import Graph, RDF, RDFS, Namespace
 
 DATA_DIR = '../data/'
-INPUT_DATA_FILES = ['HALIAS4_full.ttl']
+INPUT_DATA_FILES = ['HALIAS0_full.ttl',
+                    'HALIAS1_full.ttl',
+                    'HALIAS2_full.ttl',
+                    'HALIAS3_full.ttl',
+                    'HALIAS4_full.ttl']
 
 nsTaxMeOn = Namespace("http://www.yso.fi/onto/taxmeon/")
 #nsEnvirofi = Namespace("http://www.yso.fi/onto/envirofi/")
@@ -45,15 +49,24 @@ for taxon in taxa:
                 raise Exception('Illegal character')
 #                print(label)
 
+print 'Reading data files...'
+
 bird_observation_graph = Graph()
-bird_observation_graph.parse(DATA_DIR + 'HALIAS4_full.ttl', format='turtle')
+for rdf_file in INPUT_DATA_FILES:
+    bird_observation_graph.parse(DATA_DIR + rdf_file, format='turtle')
+    print '\tSuccessfully read data file %s' % rdf_file
 
 observations = bird_observation_graph.subjects(RDF.type, nsDataCube["Observation"])
 
 observation_date = defaultdict(list)
 
-for observation in observations:
+print 'Processing %s observations...' % len(observations)
+
+for i, observation in enumerate(observations):
 #    for label in bird_observation_graph.objects(observation, RDFS.label):
+    if i % 1000 == 0:
+        print '\tObservation %s' % i
+
     taxon = next(bird_observation_graph.objects(observation, nsHaliasSchema['observedSpecies']))
     for date in bird_observation_graph.objects(observation, nsHaliasSchema['refTime']):
         observation_date[str(date)].append(taxon_map[unicode(taxon)])
@@ -62,6 +75,8 @@ for observation in observations:
 #pprint.pprint(list(observation_date.items())[:10])
 
 f = open(DATA_DIR + 'observation.basket', 'w')
+
+print 'Writing observations to file...'
 
 for (date, obs_list) in sorted(observation_date.iteritems()):
     row = u", ".join(obs_list) + u"\n"
