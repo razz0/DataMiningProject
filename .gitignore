@@ -15,6 +15,7 @@ results
 *.nav
 *.snm
 *.vrb
+*.log
 
 # Python
 *.py[co]

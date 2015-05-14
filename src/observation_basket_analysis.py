@@ -34,9 +34,9 @@ with open(RESULT_DIR + 'frequent_sets_minsup_%s.txt' % minsup, 'w') as f:
     for itemset in max_itemset[1]:
         f.write(itemset + "\n")
 
-print('\nFrequent generated rules:\n')
+print('\nFrequent generated rules (pajulintu -> x:)\n')
 
-rules = Orange.associate.AssociationRulesSparseInducer(data, support=0.3, confidence=0.3, max_item_sets=10**7)
+rules = Orange.associate.AssociationRulesSparseInducer(data, support=0.35, confidence=0.35, max_item_sets=10**7)
 
 print "%5s   %5s   %5s" % ("supp", "conf", 'lift')
 
@@ -49,4 +49,17 @@ with open(RESULT_DIR + 'association_rules_pajulintu.txt', 'w') as f:
     for r in rules:
         rule = "%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r)
         f.write(rule + "\n")
+
+print('\nFrequent generated rules (suosirri -> x:)\n')
+
+for r in rules:
+#    if r.n_left == 1 and r.n_right >= 5:
+    if str(r.left) == 'suosirri':
+        print "%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r)
+
+for r in rules:
+#    if r.n_left == 1 and r.n_right >= 5:
+    if str(r.left) == 'haahka':
+        print "%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r)
+
 
