@@ -117,11 +117,12 @@ This technical report examines the use of data mining techniques~\cite{tan2006in
 \section{Dataset}
 %%%%%%%%%%%%%%%%%%%
 
-Halias bird observatory is located at the southernmost tip of Finland in Hanko, Finland. Halias has been gathering bird observation data from 1979 onward and it has been used intensively in research~\cite{HangonJulkaisut}. However data mining or machine learning methods have been never applied to it, so these methods could perhaps uncover some interesting patterns in the data.
+Hanko Bird Observatory, \emph{Halias}, is located at the southernmost tip of Finland in Hanko, Finland. Halias has been gathering bird observation data from 1979 onward and it has been used intensively in research~\cite{HangonJulkaisut}. However data mining or machine learning methods have been never applied to it, so these methods could perhaps uncover some interesting patterns in the data.
 
-Data gathering at the bird observatory is highly standardized and main focus is on counting the daily migration of each bird species. The data unfortunately is not publicly available, but is available for research projects at request.
+Gathering the data at Halias is highly standardized and main focus is on counting the daily migration of each bird species. Manning the station is based on volunteers, which causes some gaps in the data when no observers are present.
+The dataset is not publicly available, but is available for research projects at request.
 
-The data in digital form consists of two Excel files, containing half a million rows of distinct daily counts per species for local and migrating birds from 1979 to 2009.
+The data in original digital format consists of two Excel files, containing half a million rows of distinct daily counts per species for local and migrating birds from 1979 to 2009.
 
 However, in this case study we will be using a linked data publication made from the original dataset. The dataset has been transformed~\cite{koho-hyvonen-orni-2014, koho2015gradu} to RDF data model and linked with weather data from nearby weather station in Hanko, Russarö and a bird taxon ontology. %~\cite{tuominen-et-al-avio-2013}.
 The linked dataset is structured using the RDF Data Cube Vocabulary~\cite{w3crdfdatacube}, containing distinct data cubes for both daily bird observations and daily weather observations. An example of the data in this format is given in figure \ref{fig: havaintograafi}.
