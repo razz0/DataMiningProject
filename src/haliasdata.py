@@ -3,9 +3,20 @@
 """
 Create simple data files from Halias RDF dataset for association analysis
 """
+import argparse
 from collections import defaultdict
+import json
+import logging
+
+from joblib import Parallel, delayed
 
 from rdflib import Graph, RDF, RDFS, Namespace
+
+logging.basicConfig()
+
+parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
+parser.add_argument('cores', help='How many CPU cores to use', type=int)
+args = parser.parse_args()
 
 DATA_DIR = '../data/'
 INPUT_DATA_FILES = ['HALIAS0_full.ttl',
@@ -51,36 +62,54 @@ for taxon in taxa:
 
 print 'Reading data files...'
 
-bird_observation_graph = Graph()
-for rdf_file in INPUT_DATA_FILES:
-    bird_observation_graph.parse(DATA_DIR + rdf_file, format='turtle')
+
+def _read_rdf_file(graph, rdf_file):
+    graph.parse(DATA_DIR + rdf_file, format='turtle')
     print '\tSuccessfully read data file %s' % rdf_file
+
+
+bird_observation_graph = Graph()
+
+Parallel(n_jobs=args.cores)(delayed(_read_rdf_file)(bird_observation_graph, rdf_file) for rdf_file in INPUT_DATA_FILES)
 
 observations = bird_observation_graph.subjects(RDF.type, nsDataCube["Observation"])
 
 observation_date = defaultdict(list)
+observation_amounts = defaultdict(list)
 
 print 'Processing observations...'
 
-for i, observation in enumerate(observations):
-#    for label in bird_observation_graph.objects(observation, RDFS.label):
+
+def _process_observation(i):
     if i % 1000 == 0:
         print '\tObservation %s' % i
 
     taxon = next(bird_observation_graph.objects(observation, nsHaliasSchema['observedSpecies']))
+    count_mig = next(bird_observation_graph.objects(observation, nsHaliasSchema['countMigration']))
+    count_tot = next(bird_observation_graph.objects(observation, nsHaliasSchema['countTotal']))
     for date in bird_observation_graph.objects(observation, nsHaliasSchema['refTime']):
         observation_date[str(date)].append(taxon_map[unicode(taxon)])
+        observation_amounts[str(date)].append((taxon_map[unicode(taxon)], count_mig, count_tot))
+
+
+Parallel(n_jobs=args.cores)(delayed(_process_observation)(index) for index, observation in enumerate(observations))
 
 #import pprint
 #pprint.pprint(list(observation_date.items())[:10])
 
-f = open(DATA_DIR + 'observation.basket', 'w')
+print 'Writing observations to files...'
 
-print 'Writing observations to file...'
+f = open(DATA_DIR + 'observation.basket', 'w')
 
 for (date, obs_list) in sorted(observation_date.iteritems()):
     row = u", ".join(obs_list) + u"\n"
     #print row
     f.write(row.encode('utf8'))
+
+f.close()
+
+f = open(DATA_DIR + 'observation.sequence', 'w')
+
+json.dump(observation_amounts, f)
 
 f.close()
