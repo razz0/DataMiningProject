@@ -82,8 +82,6 @@ print('Processing observations...')
 
 
 def _process_observation(i, observation):
-    print(i)
-    print(observation)
     if i % 1000 == 0:
         print('\tObservation %s' % i)
 

@@ -3,6 +3,4 @@ numpy==1.9.2
 pytz==2015.2
 rdflib==4.2.0
 scipy==0.13.3
-# Orange==3.1
-Orange==2.7.8
 joblib==0.8.4

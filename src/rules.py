@@ -1,8 +1,7 @@
 # coding=utf-8
 import math
 
-from . import apriori as a
-import students as s
+import apriori as a
 
 
 class RuleGenerator(object):
@@ -22,9 +21,9 @@ class RuleGenerator(object):
 
         if k > m + 1:
             new_consequents = a._apriori_gen(consequents)
-            # TODO: Prune
-            for new_con in new_consequents:
-                pass
+            # TODO: Prune for better speed
+            #for new_con in new_consequents:
+            #    pass
 
     def confidence(self, antecedent, consequent):
         ant_sup = a.support_count(antecedent, self.transactions)
@@ -58,7 +57,6 @@ class RuleGenerator(object):
     def rule_generation(self, minconf, itemsets=None, maxconf=None, fixed_consequents=()):
         """
         Generate rules ({A, B} -> {C}) from frequent itemsets
-
         """
         rules = []
 
@@ -70,10 +68,11 @@ class RuleGenerator(object):
                 for x in candidates:
                     consequent = list(set(itemset) - set(x))
                     conf = self.confidence(x, consequent)
-                    if consequent and conf >= minconf and not maxconf or conf < maxconf:
-                        if fixed_consequents and set(consequent) & set(fixed_consequents):
+                    if consequent and conf >= minconf and (not maxconf or conf <= maxconf):
+                        if (fixed_consequents and set(consequent) & set(fixed_consequents)) \
+                                or not fixed_consequents:
                             rules.append({(x, tuple(consequent)): conf})
-                        #print 'found rule %s -> %s' % (x, tuple(consequent))
+                        print('found rule %s -> %s' % (x, tuple(consequent)))
                         good_candidates.append(x)
 
                 candidates = a._apriori_gen(good_candidates)

@@ -2,12 +2,13 @@
 Analyse observation basket
 '''
 import argparse
-import csv
 import joblib
 
 import pandas as pd
 
 import apriori
+import helpers
+from rules import RuleGenerator
 
 parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
 parser.add_argument('minsup', help='Minimum support', nargs='?', type=float, default=0.8)
@@ -16,18 +17,9 @@ args = parser.parse_args()
 apriori.NUM_CORES = 1
 
 
-DATA_DIR = '../data/'
-
 MINSUP = args.minsup
 
-itemsets = []
-
-with open(DATA_DIR + 'observation.basket') as csvfile:
-    transaction_reader = csv.reader(csvfile, delimiter=',')
-    for row in transaction_reader:
-        itemsets.append(tuple(row))
-#inducer = Orange.associate.AssociationRulesSparseInducer(support=minsup, store_examples=False, max_item_sets=10**7)
-#itemsets = inducer.get_itemsets(data)
+itemsets = helpers.read_observation_basket(helpers.DATA_DIR + 'observation.basket')
 
 all_items = list(set([item for itemset in itemsets for item in itemset]))
 
@@ -42,38 +34,15 @@ freq_items = apriori.apriori(itemsets, all_items, MINSUP, verbose=True)
 print(freq_items[-1])
 print(len(freq_items))
 
-joblib.dump(freq_items, DATA_DIR + 'freq_items_{:.3f}.pkl'.format(MINSUP))
+joblib.dump(freq_items, helpers.DATA_DIR + 'freq_items_{:.3f}.pkl'.format(MINSUP))
 
-# with open(RESULT_DIR + 'frequent_sets_minsup_%s.txt' % MINSUP, 'w') as f:
-#     for itemset in max_itemset[1]:
-#         f.write(itemset + "\n")
-#
-# print('\nFrequent generated rules (pajulintu -> x:)\n')
-#
-# rules = Orange.associate.AssociationRulesSparseInducer(data, support=0.35, confidence=0.35, max_item_sets=10**7)
-#
-# print("%5s   %5s   %5s" % ("supp", "conf", 'lift'))
-#
-# for r in rules:
-# #    if r.n_left == 1 and r.n_right >= 5:
-#     if str(r.left) == 'pajulintu':
-#         print("%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r))
-#
-# with open(RESULT_DIR + 'association_rules_pajulintu.txt', 'w') as f:
-#     for r in rules:
-#         rule = "%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r)
-#         f.write(rule + "\n")
-#
-# print('\nFrequent generated rules (suosirri -> x:)\n')
-#
-# for r in rules:
-# #    if r.n_left == 1 and r.n_right >= 5:
-#     if str(r.left) == 'suosirri':
-#         print("%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r))
-#
-# for r in rules:
-# #    if r.n_left == 1 and r.n_right >= 5:
-#     if str(r.left) == 'haahka':
-#         print("%5.3f   %5.3f   %5.3f   %s" % (r.support, r.confidence, r.lift, r))
-#
-#
+ruler = RuleGenerator(itemsets, all_items)
+
+rules = ruler.rule_generation(0.1) #, fixed_consequents=[('varis',)])
+
+print(len(rules))
+
+joblib.dump(rules, helpers.DATA_DIR + 'freq_rules_{:.3f}.pkl'.format(MINSUP))
+
+for (rule, conf) in rules:
+    print(' -> %s \t conf: {:.2f} \t supp: {:.3f}'.format(conf, ruler.support(*rule)))
