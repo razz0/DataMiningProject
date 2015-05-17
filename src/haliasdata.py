@@ -65,12 +65,12 @@ bird_observation_graph = Graph()
 
 def _read_rdf_file(rdf_file):
     bird_observation_graph.parse(DATA_DIR + rdf_file, format='turtle')
-    print('\tSuccessfully read data file %s' % rdf_file)
+    print(('\tSuccessfully read data file %s' % rdf_file))
 
 
 Parallel(n_jobs=args.cores)(delayed(_read_rdf_file)(rdf_file) for rdf_file in INPUT_DATA_FILES)
 
-print('Got %s statements.' % bird_observation_graph)
+print(('Got %s statements.' % bird_observation_graph))
 
 observations = bird_observation_graph.subjects(RDF.type, nsDataCube["Observation"])
 
@@ -81,8 +81,8 @@ print('Processing observations...')
 
 
 def _process_observation(i, observation):
-    print i
-    print observation
+    print(i)
+    print(observation)
     if i % 1000 == 0:
         print('\tObservation %s' % i)
 

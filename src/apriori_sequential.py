@@ -128,9 +128,9 @@ def get_subsequences(sequence):
     """
     subseqs = []
 
-    for i in reversed(range(0, len(sequence))):
+    for i in reversed(list(range(0, len(sequence)))):
         element = sequence[i]
-        for j in reversed(range(0, len(element))):
+        for j in reversed(list(range(0, len(element)))):
             event = element[j]
             if len(element) == 1:
                 subseq = sequence[:i] + sequence[(i + 1):]
@@ -157,15 +157,15 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
                 ((2,), (3, 4), (4, 5)), \
                 ((1, 3), (2, 4, 5))]
     >>> pprint(apriori_sequential(seqs, 0.8))
-    [{((1,),): 0.80000000000000004},
+    [{((1,),): 0.8},
      {((2,),): 1.0},
      {((3,),): 1.0},
      {((4,),): 1.0},
-     {((5,),): 0.80000000000000004},
-     {((1,), (2,)): 0.80000000000000004},
-     {((2,), (3,)): 0.80000000000000004},
-     {((2, 4),): 0.80000000000000004},
-     {((3,), (5,)): 0.80000000000000004}]
+     {((5,),): 0.8},
+     {((1,), (2,)): 0.8},
+     {((2,), (3,)): 0.8},
+     {((2, 4),): 0.8},
+     {((3,), (5,)): 0.8}]
     >>> seqs = [((1,), (), (), (2,), (), (), (3,)), \
                 ((1, 2,), (), (2,3 ), (2,), (), (3,), ()), \
                 ((1,), (2,), (), (2,), (3,), (3,), (2, 3, 4))]
@@ -178,7 +178,7 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
     support = defaultdict(int)
 
     if verbose:
-        print 'Initializing length 1 frequent sequences...'
+        print('Initializing length 1 frequent sequences...')
 
     for seq in sequences:
         events = sorted(set(flatten(seq)))
@@ -193,8 +193,8 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
                     frequent_sequences[1].append(event_seq)
 
     if verbose:
-        print 'Initialized %s 1-sequences' % len(frequent_sequences[1])
-        print 'Generating longer frequent sequences...'
+        print('Initialized %s 1-sequences' % len(frequent_sequences[1]))
+        print('Generating longer frequent sequences...')
 
     pruned_candidates = ['dummy', 'dummy']
 
@@ -202,7 +202,7 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
         k += 1
         candidate_seqs = _sequential_candidate_generation(frequent_sequences[k - 1], k)
         if verbose:
-            print 'k=%s - candidate sequence count %s' % (k, len(candidate_seqs),)
+            print('k=%s - candidate sequence count %s' % (k, len(candidate_seqs),))
         if not candidate_seqs:
             break
 
@@ -216,7 +216,7 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
         for pruned_index, pruned_seq in enumerate(pruned_candidates):
             if verbose and k > 3 and len(pruned_candidates) > 50 \
                     and pruned_index % (1 + len(pruned_candidates) / 5) == 0:
-                print 'Candidate %s / %s' % (pruned_index, len(pruned_candidates))
+                print('Candidate %s / %s' % (pruned_index, len(pruned_candidates)))
             for seq in sequences:
                 if is_subsequence(pruned_seq, seq):
                     support[pruned_seq] += 1
@@ -235,8 +235,8 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
 
 
 if __name__ == "__main__":
-    print 'Running doctests'
+    print('Running doctests')
     import doctest
     res = doctest.testmod()
     if not res[0]:
-        print 'OK!'
+        print('OK!')

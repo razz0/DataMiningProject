@@ -8,9 +8,9 @@ import pandas as pd
 
 import apriori
 
-# parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
-# parser.add_argument('cores', help='How many CPU cores to use', type=int)
-# args = parser.parse_args()
+parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
+parser.add_argument('minsup', help='Minimum support', nargs='?', type=float, default=0.8)
+args = parser.parse_args()
 
 apriori.NUM_CORES = 1
 
@@ -18,11 +18,11 @@ apriori.NUM_CORES = 1
 DATA_DIR = '../data/'
 RESULT_DIR = '../results/'
 
-MINSUP = 0.8
+MINSUP = args.minsup
 
 itemsets = []
 
-with open(DATA_DIR + 'observation.basket.1') as csvfile:
+with open(DATA_DIR + 'observation.basket') as csvfile:
     transaction_reader = csv.reader(csvfile, delimiter=',')
     for row in transaction_reader:
         itemsets.append(tuple(row))
@@ -37,25 +37,10 @@ print(len(all_items))
 
 print('\nSupport %1f frequent itemsets:\n' % MINSUP)
 
-max_itemset = (0, [])
-
-#for itemset in itemsets:
-#    if len(itemset[0]) > max_itemset[0]:
-#        max_itemset = (len(itemset[0]), [])
-#    if len(itemset[0]) == max_itemset[0]:
-#        itemset_string = ', '.join([data.domain[i].name for i in itemset[0]])
-#        max_itemset[1].append(itemset_string)
-
 freq_items = apriori.apriori(itemsets, all_items, MINSUP, verbose=True)
-print(freq_items)
+print(freq_items[-1])
 print(len(freq_items))
 
-# print('Found length %s frequent itemset(s)' % max_itemset[0])
-#
-# for itemset in max_itemset[1]:
-#     print(itemset)
-# #    print ', '.join([data.domain[i].name for i in itemset[0]]).decode('utf8')
-#
 # with open(RESULT_DIR + 'frequent_sets_minsup_%s.txt' % MINSUP, 'w') as f:
 #     for itemset in max_itemset[1]:
 #         f.write(itemset + "\n")
