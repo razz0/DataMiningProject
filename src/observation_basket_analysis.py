@@ -3,6 +3,7 @@ Analyse observation basket
 '''
 import argparse
 import csv
+import joblib
 
 import pandas as pd
 
@@ -16,13 +17,12 @@ apriori.NUM_CORES = 1
 
 
 DATA_DIR = '../data/'
-RESULT_DIR = '../results/'
 
 MINSUP = args.minsup
 
 itemsets = []
 
-with open(DATA_DIR + 'observation.basket') as csvfile:
+with open(DATA_DIR + 'observation.basket.1') as csvfile:
     transaction_reader = csv.reader(csvfile, delimiter=',')
     for row in transaction_reader:
         itemsets.append(tuple(row))
@@ -35,11 +35,14 @@ print(len(itemsets))
 print(len(all_items))
 #print(itemsets[:1])
 
-print('\nSupport %1f frequent itemsets:\n' % MINSUP)
+print('\nSupport {:.3f} frequent itemsets:\n'.format(MINSUP))
 
 freq_items = apriori.apriori(itemsets, all_items, MINSUP, verbose=True)
+
 print(freq_items[-1])
 print(len(freq_items))
+
+joblib.dump(freq_items, DATA_DIR + 'freq_items_{:.3f}.pkl'.format(MINSUP))
 
 # with open(RESULT_DIR + 'frequent_sets_minsup_%s.txt' % MINSUP, 'w') as f:
 #     for itemset in max_itemset[1]:

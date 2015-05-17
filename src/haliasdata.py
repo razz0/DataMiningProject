@@ -4,6 +4,7 @@ Create simple data files from Halias RDF dataset for association analysis
 """
 
 
+import sys
 import argparse
 from collections import defaultdict
 import json
@@ -106,7 +107,10 @@ f = open(DATA_DIR + 'observation.basket', 'w')
 for (date, obs_list) in sorted(observation_date.items()):
     row = ", ".join(obs_list) + "\n"
     #print row
-    f.write(row.encode('utf8'))
+    if sys.version_info < (3, 0):
+        f.write(row.encode('utf8'))
+    else:
+        f.write(row)
 
 f.close()
 
