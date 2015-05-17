@@ -8,11 +8,11 @@ import pandas as pd
 
 import apriori
 
-parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
-parser.add_argument('cores', help='How many CPU cores to use', type=int)
-args = parser.parse_args()
+# parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
+# parser.add_argument('cores', help='How many CPU cores to use', type=int)
+# args = parser.parse_args()
 
-apriori.NUM_CORES = args.cores
+apriori.NUM_CORES = 1
 
 
 DATA_DIR = '../data/'

@@ -6,8 +6,11 @@ import itertools
 from joblib import Parallel, delayed
 
 
-NUM_CORES = 2  # Overwrite for more
+NUM_CORES = 1
 
+# TODO:
+#   - use Numpy arrays where possible
+#   - after that, another try at multiprocessing
 
 def support_count(itemset, transactions):
     """
@@ -67,28 +70,6 @@ def _apriori_gen(frequent_sets):
     return new_candidates
 
 
-def _prune_by_transaction(pruned_candidates, k, frequent_itemsets, transaction, supports):
-
-    to_remove = []
-    to_support = []
-
-    candidate_sets = pruned_candidates  # Remove the already pruned ones
-    for candset in candidate_sets:
-        subsets = generate_transaction_subsets(candset, k - 1)
-        for subset in subsets:
-            if subset not in frequent_itemsets[len(subset)]:
-                # This candidate is not frequent
-                # pruned_candidates.remove(candset)
-                to_remove.append(candset)
-                break
-        else:
-            if all(candidate in transaction for candidate in candset):
-                # supports[candset] += 1
-                to_support.append(candset)
-
-    return to_remove, to_support
-
-
 def _apriori_prune(candidates, transactions, k, frequent_itemsets, minsup):
     """
     Prune candidate itemsets
@@ -110,27 +91,22 @@ def _apriori_prune(candidates, transactions, k, frequent_itemsets, minsup):
     N = len(transactions)
 
     pruned_candidates = candidates
-    supports = defaultdict(int)
+    support = defaultdict(int)
 
-    res = Parallel(n_jobs=NUM_CORES)(delayed(_prune_by_transaction)
-                                     (pruned_candidates, k, frequent_itemsets, t, supports)
-                                     for t in transactions)
+    for t in transactions:
+        candidate_sets = pruned_candidates  # Remove the already pruned ones
+        for candset in candidate_sets:
+            subsets = generate_transaction_subsets(candset, k - 1)
+            for subset in subsets:
+                if subset not in frequent_itemsets[len(subset)]:
+                    # This candidate is not frequent
+                    pruned_candidates.remove(candset)
+                    break
+            else:
+                if all(candidate in t for candidate in candset):
+                    support[candset] += 1
 
-    to_remove, to_support = zip(*res)
-
-    print(len(to_remove))
-    print(len(to_support))
-
-    for removables in to_remove:
-        for remo in removables:
-            if remo in pruned_candidates:
-                pruned_candidates.remove(remo)
-
-    for supportables in to_support:
-        for supp in supportables:
-            supports[supp] += 1
-
-    pruned_candidates = [item for item in pruned_candidates if supports[item] >= N * minsup]
+    pruned_candidates = [item for item in pruned_candidates if support[item] >= N * minsup]
 
     return pruned_candidates
 
