@@ -147,7 +147,7 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
     """
     Apriori method for sequential patterns
 
-    :param transactions: list of iterables (list of transactions containing items)
+    :param sequences: list of iterables (list of sequences containing items)
     :param all_items: list distinct items
     :param minsup: minimum support
 

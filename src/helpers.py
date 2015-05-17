@@ -33,3 +33,15 @@ def read_observation_sequences(filename):
         sequences = json.load(f)
 
     return sequences
+
+
+def get_yearly_sequences():
+    sequences = read_observation_sequences(DATA_DIR + 'observation.sequence')
+    year_seqs = []
+
+    for year in range(1979, 2009):
+        good_keys, good_seqs = zip(*[(date, obs) for date, obs in sorted(sequences.items()) if date.startswith(str(year))])
+
+        year_seqs.append([[species for species, _, _ in sorted(seq)] for seq in good_seqs])
+
+    return year_seqs

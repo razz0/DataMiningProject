@@ -6,7 +6,7 @@ import joblib
 
 import pandas as pd
 
-import apriori_sequential
+import apriori_sequential as asq
 import helpers
 
 parser = argparse.ArgumentParser(description='Convert Halias RDF dataset for data mining')
@@ -19,21 +19,14 @@ NUM_CORES = 1
 MINSUP = args.minsup
 MINCON = args.minsup
 
-sequences = helpers.read_observation_sequences(helpers.DATA_DIR + 'observation.sequence')
 
-#all_items = list(set([item for itemset in itemsets for item in itemset]))
+year_seqs = helpers.get_yearly_sequences()
 
-print(len(sequences))
-print(list(sequences.items())[0])
+# print(year_seqs[5][0])
+# print(year_seqs[0][0])
+# print(year_seqs[-5][180])
 
-year_seqs = []
-for year in range(1979, 2009):
-    good_keys, good_seqs = zip(*[(date, obs) for date, obs in sequences.items() if date.startswith(str(year))])
+freq_seqs = asq.apriori_sequential(year_seqs, MINSUP, verbose=True)
 
-    year_seqs.append([species for seq in good_seqs for species, _, _ in seq])
-    print(len(good_keys))
-
-print(year_seqs[5])
-
-#joblib.dump(freq_items, DATA_DIR + 'freq_items_{:.3f}.pkl'.format(MINSUP))
+joblib.dump(freq_seqs, helpers.DATA_DIR + 'freq_seqs_{:.3f}.pkl'.format(MINSUP))
 
