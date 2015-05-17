@@ -22,7 +22,7 @@ MINSUP = args.minsup
 
 itemsets = []
 
-with open(DATA_DIR + 'observation.basket.1') as csvfile:
+with open(DATA_DIR + 'observation.basket') as csvfile:
     transaction_reader = csv.reader(csvfile, delimiter=',')
     for row in transaction_reader:
         itemsets.append(tuple(row))
