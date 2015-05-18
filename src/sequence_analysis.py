@@ -22,9 +22,14 @@ MINCON = args.minsup
 
 year_seqs = helpers.get_yearly_sequences(prune_common_species=True)
 
-print(year_seqs[5][0])
-print(year_seqs[0][0])
-print(year_seqs[-5][180])
+print(len(year_seqs))
+a = set([spc for seq in year_seqs for day in seq for spc in day])
+print(len(a))
+print(sorted(a))
+
+#print(year_seqs[5][0])
+#print(year_seqs[0][0])
+#print(year_seqs[-5][180])
 
 freq_seqs = asq.apriori_sequential(year_seqs, MINSUP, verbose=True)
 

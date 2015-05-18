@@ -193,7 +193,7 @@ def apriori_sequential(sequences, minsup, fixed_k=None, verbose=False):
                     frequent_sequences[1].append(event_seq)
 
     if verbose:
-        print('Initialized %s 1-sequences' % len(frequent_sequences[1]))
+        print('Initialized %s frequent 1-sequences' % len(frequent_sequences[1]))
         print('Generating longer frequent sequences...')
 
     pruned_candidates = ['dummy', 'dummy']
