@@ -36,13 +36,13 @@ print(len(freq_items))
 
 joblib.dump(freq_items, helpers.DATA_DIR + 'freq_items_{:.3f}.pkl'.format(MINSUP))
 
-ruler = RuleGenerator(itemsets, all_items)
+#ruler = RuleGenerator(itemsets, all_items)
 
-rules = ruler.rule_generation(0.1) #, fixed_consequents=[('varis',)])
+#rules = ruler.rule_generation(0.1) #, fixed_consequents=[('varis',)])
 
-print(len(rules))
+#print(len(rules))
 
-joblib.dump(rules, helpers.DATA_DIR + 'freq_rules_{:.3f}.pkl'.format(MINSUP))
+#joblib.dump(rules, helpers.DATA_DIR + 'freq_rules_{:.3f}.pkl'.format(MINSUP))
 
-for (rule, conf) in rules:
-    print(' -> %s \t conf: {:.2f} \t supp: {:.3f}'.format(conf, ruler.support(*rule)))
+#for (rule, conf) in rules:
+#    print(' -> %s \t conf: {:.2f} \t supp: {:.3f}'.format(conf, ruler.support(*rule)))

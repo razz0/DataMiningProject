@@ -24,7 +24,7 @@ year_seqs = helpers.get_yearly_sequences(prune_common_species=True)
 
 print('%s years' % len(year_seqs))
 a = set([spc for seq in year_seqs for day in seq for spc in day])
-print('%s species' % len(a))
+print('%s taxa' % len(a))
 #print(sorted(a))
 
 #print(year_seqs[5][0])

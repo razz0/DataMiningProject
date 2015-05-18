@@ -4,6 +4,7 @@ Helpers for data mining tasks.
 '''
 
 import csv, json
+from rdflib import Graph, RDF, RDFS, Namespace
 
 DATA_DIR = '../data/'
 
@@ -73,3 +74,45 @@ def get_yearly_sequences(prune_common_species = False):
 
     return year_seqs
 
+
+def get_all_names(finnish_list):
+    '''
+    Get scientific name and english name from finnish name
+
+    :param finnish_list:
+    :return: list of tuples (finnish, scientific, english)
+
+    >>> get_all_names(['peippo', 'mustavaris'])
+    [('peippo', 'Fringilla coelebs', 'chaffinch'),
+     ('mustavaris', 'Corvus frugilegus', 'rook')]
+    '''
+    nsTaxMeOn = Namespace("http://www.yso.fi/onto/taxmeon/")
+
+    taxon_ontology = Graph()
+    taxon_ontology.parse(DATA_DIR + 'halias_taxon_ontology.ttl', format='turtle')
+
+    name_list = []
+
+    for finnish in finnish_list:
+        taxa = taxon_ontology.subjects(RDF.type, nsTaxMeOn["TaxonInChecklist"])
+        for taxon in taxa:
+            labels = taxon_ontology.objects(taxon, RDFS.label)
+        #    if nsRanks["Species"] in taxon_ontology.objects(taxon, RDF.type):
+            save_this = False
+            eng = None
+            sci = None
+            for label in labels:
+                if label.language == 'fi' and str(label) == finnish:
+                    save_this = True
+                elif label.language == 'en':
+                    eng = str(label)
+                else:
+                    # Assume sci
+                    sci = str(label)
+
+            if save_this:
+                name_list.append((finnish, sci, eng))
+
+    assert len(name_list) == len(finnish_list)
+
+    return name_list
