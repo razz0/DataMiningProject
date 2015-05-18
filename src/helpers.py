@@ -14,6 +14,7 @@ common_species = {
 }
 # len(common_species) == 16
 
+
 def read_observation_basket(filename):
     """
     Read observation itemsets from file.
@@ -28,6 +29,10 @@ def read_observation_basket(filename):
             itemsets.append(tuple(sorted(row)))
 
     return itemsets
+
+
+def get_species(itemsets):
+    return set([species for itemset in itemsets for species in itemset])
 
 
 def read_observation_sequences(filename):

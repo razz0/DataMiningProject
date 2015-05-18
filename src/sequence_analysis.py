@@ -22,10 +22,10 @@ MINCON = args.minsup
 
 year_seqs = helpers.get_yearly_sequences(prune_common_species=True)
 
-print(len(year_seqs))
+print('%s years' % len(year_seqs))
 a = set([spc for seq in year_seqs for day in seq for spc in day])
-print(len(a))
-print(sorted(a))
+print('%s species' % len(a))
+#print(sorted(a))
 
 #print(year_seqs[5][0])
 #print(year_seqs[0][0])
