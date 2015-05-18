@@ -111,6 +111,7 @@
 
 This technical report examines the use of data mining techniques~\cite{tan2006introduction} to find interesting patterns from a bird observatory dataset.
 
+Bird species names are written written with finnish, english and scientific names, to be accessible to different audiences. The format used is <finnish name, \emph{scientific name}, english name>.
 
 
 %%%%%%%%%%%%%%%%%%%
@@ -122,7 +123,7 @@ Hanko Bird Observatory, \emph{Halias}, is located at the southernmost tip of Fin
 Gathering the data at Halias is highly standardized and main focus is on counting the daily migration of each bird species. Manning the station is based on volunteers, which causes some gaps in the data when no observers are present.
 The dataset is not publicly available, but is available for research projects at request.
 
-The data in original digital format consists of two Excel files, containing half a million rows of distinct daily counts per species for local and migrating birds from 1979 to 2009.
+The data in original digital format consists of two Excel files, containing half a million rows of distinct daily counts per species for local and migrating birds from 1979 to 2009. Some rows contain a \emph{taxon} (plural \emph{taxa}) that is higher than species-level, for example a genus or a species pair.
 
 However, in this case study we will be using a linked data publication made from the original dataset. The dataset has been transformed~\cite{koho-hyvonen-orni-2014, koho2015gradu} to RDF data model and linked with weather data from nearby weather station in Hanko, Russarö and a bird taxon ontology. %~\cite{tuominen-et-al-avio-2013}.
 The linked dataset is structured using the RDF Data Cube Vocabulary~\cite{w3crdfdatacube}, containing distinct data cubes for both daily bird observations and daily weather observations. An example of the data in this format is given in figure \ref{fig: havaintograafi}.
@@ -135,43 +136,68 @@ The linked dataset is structured using the RDF Data Cube Vocabulary~\cite{w3crdf
 \end{figure}
 
 
-
 %%%%%%%%%%%%%%%%%%%
 \section{Methodology}
 %%%%%%%%%%%%%%%%%%%
 
-For association analysis we take a subset of the values in the data cubes and transform these to market basket transactions or sequence database. In this transformation it is easy to combine bird observations, weather observations and information from the used ontologies.
-
-The dataset is very large for many association analysis tasks, and therefore it may be neccessary to aggregate some variables.
+For association analysis we take a subset of the dimensions of the data cubes and transform these to market basket transactions or sequence database. In this transformation it is easy to combine bird observations, weather observations and information from the used ontologies. The transformed data is stored in \emph{JSON} or text files, which is then read in when doing analysis.
 
 For simplicity, we first try to find interesting patterns using just the bird observations. We will do frequent pattern mining to find the most frequently observed species and species combinations, without using the daily counts. We could also use the observed counts and generate quantitative association rules, which might reveal some interesting patterns, but is probably very slow to calculate.
 
 Next, we will try sequential pattern mining, using the timestamps already present in the data. This would probably reveal something interesting, but is again very slow to calculate.
 
-The analysis is done using Python 2.7 and Orange Data Mining Toolbox~\cite{Orange}.
+The analysis is done using Python 3 and various modules. Plotting and examining the data was done mainly with \emph{IPython notebook}\footnote{\url{http://ipython.org/notebook.html}} and \emph{pandas} (Python Data Analysis Library)\footnote{\url{http://pandas.pydata.org/}}. Conversion from RDF uses \emph{RDFLib}\footnote{\url{https://github.com/RDFLib/rdflib}}. 
+
+Pattern mining implementations are self-made\footnote{\url{https://github.com/razz0/DataMiningProject}}. They include algorithms for finding frequent itemsets, frequent sequential patterns and rule generation. The algorithms are based on the \emph{Apriori algorithm}~\cite{tan2006introduction}.
+
+The pattern mining algorithms are somewhat memory efficient, but are computationally slow. They only use a single CPU core for all calculations and they use standard Python data types, which are flexible, but computationally inefficient. An attempt was made to optimize an Apriori based algorithm for speed, by first profiling the algorithm at execution time and finding the bottlenecks. The pruning step seems to be clearly the most computationally intensive part of the algorithm. % TODO: Tarkasta kirjasta
+
+We attempted to optimize the pruning by using multiple processes, running in different CPU cores, using Python module Joblib\footnote{\url{https://pythonhosted.org/joblib/}}, which provides an improved interface to Python standard library \emph{multiprocessing} module. However, the processes running in parallel cannot access shared resources in memory, leading to extensive copying of large data structures and longer execution times. This could be overcome by switching to use data structures from NumPy\footnote{\url{http://www.numpy.org/}}, which are optimized for speed and allow shared access from multiple processes.
+
+
+\emph{Orange Data Mining Toolbox}\footnote{\url{http://orange.biolab.si/}} was also tried for analysis, but it wasn't able to cope with even simple market basket transaction data of all the daily observed taxa in the dataset (7419 days, 378 taxa).
 
 
 %%%%%%%%%%%%%%%%%%%
 \section{Analysis results}
 %%%%%%%%%%%%%%%%%%%
 
+The dataset is quite large for many association analysis tasks, which is why the focus has been on using simple methods.
+
+
 \subsection{Frequent itemsets}
 %%%%%%%%%%%%%%%%%%%
 
-Analysing daily observed species as market basket transactions, we can see what are the most commonly observed species.
-For support $0.5$, the largest frequent itemset consists of the following species. Finnish names are used here for clarity.
+Analysing daily observed species as market basket transactions, we can examine the most commonly observed species and species combinations.
 
-\begin{itemize}
-\item[] telkkä, sinisorsa, sinitiainen, isokoskelo, viherpeippo, varis, kalalokki, harmaalokki, merilokki, talitiainen
-\end{itemize}
+The most common species is <varis, \emph{Corvus corone}, carrion crow> with support 0.951. For support $0.5$, the largest frequent itemset consists of the following species:
+
+%\begin{itemize}
+\hangindent=0.7cm
+<harmaalokki, \emph{Larus argentatus}, herring gull>, \\
+<isokoskelo, \emph{Mergus merganser}, goosander/common merganser>, \\
+<kalalokki, \emph{Larus canus}, mew gull>, \\
+<merilokki, \emph{Larus marinus}, great black-backed gull>, \\
+<sinisorsa, \emph{Anas platyrhynchos}, mallard>, \\
+<sinitiainen, \emph{Parus caeruleus}, blue tit>, \\
+<talitiainen, \emph{Parus major}, great tit>, \\
+<telkkä, \emph{Bucephala clangula}, common goldeneye>, \\
+<varis, \emph{Corvus corone}, carrion crow>, \\
+<viherpeippo, \emph{Carduelis chloris}, european greenfinch> \\
+%\nohang
+%\end{itemize}
 
 This is the largest combination of species that is observed in half of the observation days. These species are very common and observable almost all year round. Individually all of the listed species have support over $0.75$.
+
+
+\subsection{Frequent taxon sequences}
+%%%%%%%%%%%%%%%%%%%
 
 
 \subsection{Rule generation}
 %%%%%%%%%%%%%%%%%%%
 
-This dataset was too large for Orange Data Mining Toolbox...
+We generated some rules from frequent itemsets... % TODO
 
 %%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
