@@ -7,11 +7,17 @@ import csv, json
 
 DATA_DIR = '../data/'
 
-common_species = {
-    # Support 0.75 items:
-    'haahka', 'harmaalokki', 'isokoskelo', 'kalalokki', 'korppi', 'kyhmyjoutsen', 'merilokki', 'naurulokki', 'peippo',
-    'sinisorsa', 'sinitiainen', 'talitiainen', 'telkkä', 'varis', 'viherpeippo', 'vihervarpunen'
-}
+common_species = {  # Support 0.5 items
+    'alli', 'haahka', 'haapana', 'haarapääsky', 'harmaalokki', 'hippiäinen', 'isokoskelo', 'kalalokki', 'korppi',
+    'kottarainen', 'kyhmyjoutsen', 'merilokki', 'merimetso', 'mustarastas', 'naurulokki', 'niittykirvinen', 'peippo',
+    'punarinta', 'räkättirastas', 'sinisorsa', 'sinitiainen', 'talitiainen', 'telkkä', 'tukkakoskelo', 'tukkasotka',
+    'tylli', 'varis', 'varpushaukka', 'viherpeippo', 'vihervarpunen', 'västäräkki'}
+#    {
+#    # Support 0.75 items:
+#    'haahka', 'harmaalokki', 'isokoskelo', 'kalalokki', 'korppi', 'kyhmyjoutsen', 'merilokki', 'naurulokki', 'peippo',
+#    'sinisorsa', 'sinitiainen', 'talitiainen', 'telkkä', 'varis', 'viherpeippo', 'vihervarpunen'
+#    }
+
 # len(common_species) == 16
 
 
