@@ -6,6 +6,7 @@ Helpers for data mining tasks.
 import csv, json
 import joblib
 from rdflib import Graph, RDF, RDFS, Namespace
+import sys
 
 nsTaxMeOn = Namespace("http://www.yso.fi/onto/taxmeon/")
 nsRanks = Namespace("http://www.yso.fi/onto/taxonomic-ranks/")
@@ -124,7 +125,7 @@ def get_all_names(finnish_list):
 
 
 def _local(uri):
-    return uri.split(sep='/')[-1]
+    return uri.split('/')[-1]
 
 
 def get_species_itemsets():
