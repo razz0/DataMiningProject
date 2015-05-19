@@ -4,7 +4,13 @@ Helpers for data mining tasks.
 '''
 
 import csv, json
+import joblib
 from rdflib import Graph, RDF, RDFS, Namespace
+
+nsTaxMeOn = Namespace("http://www.yso.fi/onto/taxmeon/")
+nsRanks = Namespace("http://www.yso.fi/onto/taxonomic-ranks/")
+nsHaliasSchema = Namespace("http://ldf.fi/schema/halias/")
+
 
 DATA_DIR = '../data/'
 
@@ -86,7 +92,6 @@ def get_all_names(finnish_list):
     [('peippo', 'Fringilla coelebs', 'chaffinch'),
      ('mustavaris', 'Corvus frugilegus', 'rook')]
     '''
-    nsTaxMeOn = Namespace("http://www.yso.fi/onto/taxmeon/")
 
     taxon_ontology = Graph()
     taxon_ontology.parse(DATA_DIR + 'halias_taxon_ontology.ttl', format='turtle')
@@ -116,3 +121,45 @@ def get_all_names(finnish_list):
     assert len(name_list) == len(finnish_list)
 
     return name_list
+
+
+def _local(uri):
+    return uri.split(sep='/')[-1]
+
+
+def get_species_itemsets():
+    '''
+    Get data about single species as transactions
+
+    :return:
+    '''
+    species_list = []
+
+    taxon_ontology = Graph()
+    taxon_ontology.parse(DATA_DIR + 'halias_taxon_ontology.ttl', format='turtle')
+
+    species_nodes = taxon_ontology.subjects(RDF.type, nsRanks["Species"])
+
+    for sp in species_nodes:
+        this_species = []
+
+        labels = taxon_ontology.objects(sp, RDFS.label)
+    #    if nsRanks["Species"] in taxon_ontology.objects(taxon, RDF.type):
+
+        for label in labels:
+            if label.language == 'fi':
+                this_species.append(str(label))
+
+        conservation_status = next(taxon_ontology.objects(sp, nsHaliasSchema['hasConservationStatus2010']), False)
+        if conservation_status:
+            this_species.append(_local(str(conservation_status)))
+        rarity = next(taxon_ontology.objects(sp, nsHaliasSchema['rarity']), False)
+        if rarity:
+            this_species.append(_local(str(rarity)))
+        charas = taxon_ontology.objects(sp, nsHaliasSchema['hasCharacteristic'])
+        if charas:
+            this_species += [_local(str(chara)) for chara in charas]
+
+        species_list.append(tuple(this_species))
+
+    return species_list
