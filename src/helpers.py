@@ -61,6 +61,11 @@ def read_observation_sequences(filename):
     return sequences
 
 
+def get_all_taxa():
+    itemsets = read_observation_basket(DATA_DIR + 'observation.basket')
+    return list(set([item for itemset in itemsets for item in itemset]))
+
+
 def get_yearly_sequences(prune_common_species = False):
     '''
     Put each years' observations into separate sequence
@@ -134,6 +139,8 @@ def get_species_itemsets():
 
     :return:
     '''
+    all_taxa = get_all_taxa()
+
     species_list = []
 
     taxon_ontology = Graph()
@@ -149,7 +156,12 @@ def get_species_itemsets():
 
         for label in labels:
             if label.language == 'fi':
-                this_species.append(str(label))
+                finnish = str(label)
+
+        if finnish not in all_taxa:
+            continue
+
+        this_species.append(finnish)
 
         conservation_status = next(taxon_ontology.objects(sp, nsHaliasSchema['hasConservationStatus2010']), False)
         if conservation_status:
@@ -159,7 +171,7 @@ def get_species_itemsets():
             this_species.append(_local(str(rarity)))
         charas = taxon_ontology.objects(sp, nsHaliasSchema['hasCharacteristic'])
         if charas:
-            this_species += [_local(str(chara)) for chara in charas]
+            this_species += ['tuntom: %s' % _local(str(chara)) for chara in charas]
 
         species_list.append(tuple(this_species))
 
