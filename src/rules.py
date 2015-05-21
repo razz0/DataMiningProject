@@ -48,21 +48,25 @@ class RuleGenerator(object):
         return self.N * a.support_count(list(set(antecedent) | set(consequent)), self.transactions) / float(sup)
 
     def IS_measure(self, antecedent, consequent):
-        denominator = math.sqrt(a.support(antecedent, self.transactions) * a.support(consequent, self.transactions))
+        denominator = math.sqrt(a.get_support(antecedent, self.transactions) * a.get_support(consequent, self.transactions))
         if denominator == 0:
             return 0
 
-        return a.support(list(set(antecedent) | set(consequent)), self.transactions) / denominator
+        return a.get_support(list(set(antecedent) | set(consequent)), self.transactions) / denominator
 
-    def rule_generation(self, minconf, itemsets=None, maxconf=None, fixed_consequents=()):
+    def rule_generation(self, minconf, itemsets=None, maxconf=None, fixed_consequents=(), verbose=False):
         """
         Generate rules ({A, B} -> {C}) from frequent itemsets
         """
         rules = []
 
-        for itemset in itemsets or self.frequent_itemsets:
+        sets = itemsets or self.frequent_itemsets
+
+        for i, itemset in enumerate(sets):
             candidates = [(item,) for item in itemset]
-            k = 1
+            if verbose:
+                print('%s initial candidates for itemset %i of %i' % (len(candidates), i, len(sets)))
+
             while candidates:
                 good_candidates = []
                 for x in candidates:
@@ -71,11 +75,17 @@ class RuleGenerator(object):
                     if consequent and conf >= minconf and (not maxconf or conf <= maxconf):
                         if (fixed_consequents and set(consequent) & set(fixed_consequents)) \
                                 or not fixed_consequents:
-                            rules.append({(x, tuple(consequent)): conf})
-                        print('found rule %s -> %s' % (x, tuple(consequent)))
+                            rules.append({(x, tuple(consequent)): (conf,
+                                                                   self.support(x, consequent),
+                                                                   self.lift(x, consequent),
+                                                                   self.IS_measure(x, consequent))})
+                            if verbose:
+                                print('found rule %s -> %s' % (x, tuple(consequent)))
                         good_candidates.append(x)
 
                 candidates = a._apriori_gen(good_candidates)
-                k += 1
+
+        if verbose:
+            print('Found %i frequent rules' % (len(rules)))
 
         return rules
