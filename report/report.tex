@@ -115,6 +115,11 @@ Bird species names are written written with finnish, english and scientific name
 
 
 %%%%%%%%%%%%%%%%%%%
+\section{Related work???}
+%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%%%%%%%%%%
 \section{Dataset}
 %%%%%%%%%%%%%%%%%%%
 
@@ -125,8 +130,10 @@ The dataset is not publicly available, but is available for research projects at
 
 The data in original digital format consists of two Excel files, containing half a million rows of distinct daily counts per species for local and migrating birds from 1979 to 2009. Some rows contain a \emph{taxon} (plural \emph{taxa}) that is higher than species-level, for example a genus or a species pair.
 
-However, in this case study we will be using a linked data publication made from the original dataset. The dataset has been transformed~\cite{koho-hyvonen-orni-2014, koho2015gradu} to RDF data model and linked with weather data from nearby weather station in Hanko, Russarö and a bird taxon ontology. %~\cite{tuominen-et-al-avio-2013}.
-The linked dataset is structured using the RDF Data Cube Vocabulary~\cite{w3crdfdatacube}, containing distinct data cubes for both daily bird observations and daily weather observations. An example of the data in this format is given in figure \ref{fig: havaintograafi}.
+However, in this case study we will be using a linked data publication made from the original dataset. The dataset has been transformed~\cite{koho-hyvonen-orni-2014, koho2015gradu} to RDF data model and linked with weather data from nearby weather station in Hanko, Russarö and a bird taxon ontology.
+The linked dataset is structured using the RDF Data Cube Vocabulary~\cite{w3crdfdatacube}, containing distinct data cubes for both daily bird observations and daily weather observations. An example of the bird observation data in this format is given in figure \ref{fig: havaintograafi}.
+
+The used bird taxon ontology~\cite{koho2015gradu} contains finnish conservation statuses for endangered species, a coarse measure of commonness at Halias and characteristics of many finnish species, such as size, beak color and plumage coloring.
 
 \begin{figure}[htb]
 \centering
@@ -205,8 +212,6 @@ Baz\ref{fig: phacar_weeks}.
 \end{figure}
 
 
-Species itemset rules, like: {(('tuntom: loppukevatalkukesa', 'tuntom: nokkatumma', 'tuntom: paakirjava', 'tuntom: silmanvarikalvotumma', 'tuntom: ylapuoliainakinkaksivarinen'), ('tuntom: loppukesasyksy',)): 0.9935064935064936}
-
 \subsection{Frequent itemsets}
 %%%%%%%%%%%%%%%%%%%
 
@@ -239,7 +244,15 @@ This is the largest combination of species that is observed in half of the obser
 \subsection{Rule generation}
 %%%%%%%%%%%%%%%%%%%
 
-We generated some rules from frequent itemsets... % TODO
+We generated some rules~\cite{tan2006introduction} from frequent itemsets... % TODO
+
+\subsection{Analysing species itemsets}
+%%%%%%%%%%%%%%%%%%%
+
+We created itemsets of species, where each species is grouped with its' characteristics, conservation status and commonness measure at Halias. Analysing these itemsets as market basket transactions we can infer frequent rules, but these seem to mostly tell us about the used characteristics ontology and its' annotations. 
+
+Species itemset rules, like: {(('tuntom: loppukevatalkukesa', 'tuntom: nokkatumma', 'tuntom: paakirjava', 'tuntom: silmanvarikalvotumma', 'tuntom: ylapuoliainakinkaksivarinen'), ('tuntom: loppukesasyksy',)): 0.9935064935064936}
+
 
 %%%%%%%%%%%%%%%%%%%
 \section{Conclusions}
