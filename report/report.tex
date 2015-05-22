@@ -237,21 +237,59 @@ The most common species is <varis, \emph{Corvus corone}, carrion crow> with supp
 This is the largest combination of species that is observed in half of the observation days. These species are very common and observable almost all year round. Individually all of the listed species have support over $0.75$.
 
 
-\subsection{Frequent taxon sequences}
+%\subsection{Frequent taxon sequences}
 %%%%%%%%%%%%%%%%%%%
 
 
-\subsection{Rule generation}
+%\subsection{Rule generation}
 %%%%%%%%%%%%%%%%%%%
 
-We generated some rules~\cite{tan2006introduction} from frequent itemsets... % TODO
+%By generating some high confidence rules~\cite{tan2006introduction} from frequent itemsets we can get
 
 \subsection{Analysing species itemsets}
 %%%%%%%%%%%%%%%%%%%
 
-We created itemsets of species, where each species is grouped with its' characteristics, conservation status and commonness measure at Halias. Analysing these itemsets as market basket transactions we can infer frequent rules, but these seem to mostly tell us about the used characteristics ontology and its' annotations. 
+We created itemsets of species, where each species is grouped with its' characteristics, conservation status and commonness measure at Halias. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations. 
+Table \ref{fig: species_itemsets} shows two examples of a frequent generated rule with the rules' measures~\cite{tan2006introduction} for confidence, support, lift and IS measure.
+The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of the characteristics ontology, describing seasonal occurence of the species in Finland.
 
-Species itemset rules, like: {(('tuntom: loppukevatalkukesa', 'tuntom: nokkatumma', 'tuntom: paakirjava', 'tuntom: silmanvarikalvotumma', 'tuntom: ylapuoliainakinkaksivarinen'), ('tuntom: loppukesasyksy',)): 0.9935064935064936}
+\begin{table}[h]
+\centering
+\begin{tabularx}{\textwidth}{| >{\hsize=3.2\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.4\hsize}X | >{\hsize=0.3\hsize}X | >{\hsize=0.6\hsize}X |}
+  \hline
+  \textbf{Rule} & \small \textbf{Con\-fi\-den\-ce} & \small \textbf{Sup\-port} & \small \textbf{Lift} & \small \textbf{IS measure}\\
+  \hline
+  \small
+  \{Late spring -- early summer, beak dark, head multicoloured, iris dark, upperside atleast 2-coloured\}
+  $\rightarrow$
+  \{Late summer -- autumn\} 
+  & 0.994 & 0.507 & 1.26 & 0.799 \\
+  \hline
+  \small
+  \{Common species at Halias\}
+  $\rightarrow$
+  \{Late spring -- early summer, Late summer -- autumn\} 
+  & 0.928 & 0.513 & 1.19 & 0.782 \\
+  \hline
+\end{tabularx}
+\caption{Two examples of frequent rules generated from species itemsets.}
+\label{fig: species_itemsets}
+\end{table}
+
+
+
+\subsection{Species itemsets with weather variables}
+
+We enriched the species itemsets with weather variables that have been measured each day from sunrise to sunset. For each species we add an average of the weather variables and weight it with the count of birds that have been observed at that day, so that we get an average weather condition in which the species exists.
+
+Pressure limits:         low = [994.25, 1013.03]         average = (1013.03, 1014.48]    high = (1014.48, 1039.00]
+Cloud cover limits:      low = [0.00, 3.90]      average = (3.90, 4.50]          high = (4.50, 8.00]
+Humidity limits:         low = [56.00, 79.69]    average = (79.69, 81.79]        high = (81.79, 93.67]
+Rainfall limits:         low = [0.00, 1.00]      average = (1.00, 1.39]          high = (1.39, 18.00]
+Temperature limits:      low = [-2.40, 8.44]     average = (8.44, 12.14]         high = (12.14, 20.00]
+Wind speed limits:       low = [0.06, 8.00]      average = (8.00, 18.82]         high = (18.82, 2108.97]
+
+
 
 
 %%%%%%%%%%%%%%%%%%%
