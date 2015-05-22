@@ -2,11 +2,14 @@
 '''
 Helpers for data mining tasks.
 '''
+from collections import defaultdict
 
-import csv, json
-import joblib
+import csv
+import json
+import math
+
 from rdflib import Graph, RDF, RDFS, Namespace
-import sys
+
 
 nsTaxMeOn = Namespace("http://www.yso.fi/onto/taxmeon/")
 nsRanks = Namespace("http://www.yso.fi/onto/taxonomic-ranks/")
@@ -49,7 +52,7 @@ def get_species(itemsets):
     return set([species for itemset in itemsets for species in itemset])
 
 
-def read_observation_sequences(filename):
+def read_observation_sequences(filename=DATA_DIR + 'observation.sequence'):
     """
     Read observation sequences from file.
 
@@ -129,7 +132,7 @@ def get_all_names(finnish_list):
     return name_list
 
 
-def _local(uri):
+def local_name(uri):
     return uri.split('/')[-1]
 
 
@@ -141,7 +144,8 @@ def get_species_itemsets():
     '''
     all_taxa = get_all_taxa()
 
-    species_list = []
+    species_itemsets = []
+    species_names = []
 
     taxon_ontology = Graph()
     taxon_ontology.parse(DATA_DIR + 'halias_taxon_ontology.ttl', format='turtle')
@@ -165,14 +169,43 @@ def get_species_itemsets():
 
         conservation_status = next(taxon_ontology.objects(sp, nsHaliasSchema['hasConservationStatus2010']), False)
         if conservation_status:
-            this_species.append(_local(str(conservation_status)))
+            this_species.append(local_name(str(conservation_status)))
         rarity = next(taxon_ontology.objects(sp, nsHaliasSchema['rarity']), False)
         if rarity:
-            this_species.append(_local(str(rarity)))
+            this_species.append(local_name(str(rarity)))
         charas = taxon_ontology.objects(sp, nsHaliasSchema['hasCharacteristic'])
         if charas:
-            this_species += ['tuntom: %s' % _local(str(chara)) for chara in charas]
+            this_species += ['tuntom: %s' % local_name(str(chara)) for chara in charas]
 
-        species_list.append(tuple(this_species))
+            # Take only species with characteristics
+        species_itemsets.append(this_species)
+        species_names.append(finnish)
 
-    return species_list
+    seqs = read_observation_sequences()
+
+    sums_pres = defaultdict(int)
+    amounts = defaultdict(int)
+    sums_temp = defaultdict(int)
+    # n_temp = defaultdict(int)
+
+    for date, obses in seqs.items():
+        for obs in obses:
+            species, count_mig, count_tot, month_num, \
+                weather_pressure, weather_cover, weather_humidity, weather_rainfall, weather_temp_day, weather_wind, \
+                weather_std_cover, weather_std_temp, weather_std_wind = obs
+            if species in species_names:
+                sums_pres[species] += int(weather_pressure) * int(count_tot)
+                amounts[species] += int(count_tot)
+                sums_temp[species] += int(weather_temp_day) * int(count_tot)
+                # n_temp[species] += int(count_tot)
+
+    _unknown = -99999999999
+
+    for sp, n in amounts.items():
+        for sp_list in species_itemsets:
+            if sp == sp_list[0]:
+                sp_list.append('day temperature %s' % (5 * int(round(sums_temp.get(sp, _unknown) / float(5 * n)))))
+                sp_list.append('air pressure %s' % (5 * int(sums_pres.get(sp, _unknown) / float(5 * n))))
+
+    return species_itemsets
+
