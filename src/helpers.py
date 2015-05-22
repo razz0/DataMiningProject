@@ -175,7 +175,7 @@ def get_species_itemsets():
             this_species.append(local_name(str(rarity)))
         charas = taxon_ontology.objects(sp, nsHaliasSchema['hasCharacteristic'])
         if charas:
-            this_species += ['tuntom: %s' % local_name(str(chara)) for chara in charas]
+            this_species += ['tuntomerkki %s' % local_name(str(chara)) for chara in charas]
 
             # Take only species with characteristics
         species_itemsets.append(this_species)
@@ -183,10 +183,12 @@ def get_species_itemsets():
 
     seqs = read_observation_sequences()
 
-    sums_pres = defaultdict(int)
     amounts = defaultdict(int)
+    sums_pres = defaultdict(int)
+    sums_cover = defaultdict(int)
+    sums_humi = defaultdict(int)
+    sums_rain = defaultdict(int)
     sums_temp = defaultdict(int)
-    # n_temp = defaultdict(int)
 
     for date, obses in seqs.items():
         for obs in obses:
@@ -194,18 +196,83 @@ def get_species_itemsets():
                 weather_pressure, weather_cover, weather_humidity, weather_rainfall, weather_temp_day, weather_wind, \
                 weather_std_cover, weather_std_temp, weather_std_wind = obs
             if species in species_names:
-                sums_pres[species] += int(weather_pressure) * int(count_tot)
                 amounts[species] += int(count_tot)
+                sums_pres[species] += int(weather_pressure) * int(count_tot)
+                if weather_cover is not None:
+                    sums_cover[species] += int(weather_cover) * int(count_tot)
+                if weather_humidity is not None:
+                    sums_humi[species] += int(weather_humidity) * int(count_tot)
+                if weather_rainfall is not None:
+                    sums_rain[species] += int(weather_rainfall) * int(count_tot)
                 sums_temp[species] += int(weather_temp_day) * int(count_tot)
                 # n_temp[species] += int(count_tot)
 
-    _unknown = -99999999999
+    pres_list = []
+    cover_list = []
+    humi_list = []
+    rain_list = []
+    temp_list = []
+
+    for sp, n in amounts.items():
+        pres_list.append(sums_pres[sp] / float(n))
+        cover_list.append(sums_cover[sp] / float(n))
+        humi_list.append(sums_humi[sp] / float(n))
+        rain_list.append(sums_rain[sp] / float(n))
+        temp_list.append(sums_temp[sp] / float(n))
+
+    pres_limit_low = sorted(pres_list)[int(round(len(pres_list) / 3.0))]
+    pres_limit_high = sorted(pres_list)[int(round(len(pres_list) / 3.0 * 2))]
+
+    cover_limit_low = sorted(cover_list)[int(round(len(cover_list) / 3.0))]
+    cover_limit_high = sorted(cover_list)[int(round(len(cover_list) / 3.0 * 2))]
+
+    humi_limit_low = sorted(humi_list)[int(round(len(humi_list) / 3.0))]
+    humi_limit_high = sorted(humi_list)[int(round(len(humi_list) / 3.0 * 2))]
+
+    rain_limit_low = sorted(rain_list)[int(round(len(rain_list) / 3.0))]
+    rain_limit_high = sorted(rain_list)[int(round(len(rain_list) / 3.0 * 2))]
+
+    temp_limit_low = sorted(temp_list)[int(round(len(temp_list) / 3.0))]
+    temp_limit_high = sorted(temp_list)[int(round(len(temp_list) / 3.0 * 2))]
+
+    print('Pressure limits: '
+          '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
+          .format(min=min(pres_list), low=pres_limit_low, high=pres_limit_high, max=max(pres_list)))
+    print('Cloud cover limits: '
+          '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
+          .format(min=min(cover_list), low=cover_limit_low, high=cover_limit_high, max=max(cover_list)))
+    print('Humidity limits: '
+          '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
+          .format(min=min(humi_list), low=humi_limit_low, high=humi_limit_high, max=max(humi_list)))
+    print('Rainfall limits: '
+          '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
+          .format(min=min(rain_list), low=rain_limit_low, high=rain_limit_high, max=max(rain_list)))
+    print('Temperature limits: '
+          '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
+          .format(min=min(temp_list), low=temp_limit_low, high=temp_limit_high, max=max(temp_list)))
 
     for sp, n in amounts.items():
         for sp_list in species_itemsets:
             if sp == sp_list[0]:
-                sp_list.append('day temperature %s' % (5 * int(round(sums_temp.get(sp, _unknown) / float(5 * n)))))
-                sp_list.append('air pressure %s' % (5 * int(sums_pres.get(sp, _unknown) / float(5 * n))))
+                pressure = sums_pres[sp] / float(n)
+                pressure = 'low' if pressure <= pres_limit_low else 'average' if pressure <= pres_limit_high else 'high'
+                sp_list.append('air pressure %s' % pressure)
+
+                cover = sums_cover[sp] / float(n)
+                cover = 'low' if cover <= cover_limit_low else 'average' if cover <= cover_limit_high else 'high'
+                sp_list.append('cloud cover %s' % cover)
+
+                humi = sums_humi[sp] / float(n)
+                humi = 'low' if humi <= humi_limit_low else 'average' if humi <= humi_limit_high else 'high'
+                sp_list.append('humidity %s' % humi)
+
+                rain = sums_rain[sp] / float(n)
+                rain = 'low' if rain <= rain_limit_low else 'average' if rain <= rain_limit_high else 'high'
+                sp_list.append('rainfall %s' % rain)
+
+                temp_day = sums_temp[sp] / float(n)
+                temp_day = 'low' if temp_day <= temp_limit_low else 'average' if temp_day <= temp_limit_high else 'high'
+                sp_list.append('day temperature %s' % temp_day)
 
     return species_itemsets
 
