@@ -72,6 +72,9 @@ class RuleGenerator(object):
                 for x in candidates:
                     consequent = list(set(itemset) - set(x))
                     conf = self.confidence(x, consequent)
+
+                    # TODO: Refactor structure (is minconf working?)
+
                     if consequent and conf >= minconf and (not maxconf or conf <= maxconf):
                         if (fixed_consequents and set(consequent) & set(fixed_consequents)) \
                                 or not fixed_consequents:

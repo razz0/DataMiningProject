@@ -136,7 +136,7 @@ def local_name(uri):
     return uri.split('/')[-1]
 
 
-def get_species_itemsets():
+def get_species_itemsets(use_all_species=False):
     '''
     Get data about single species as transactions
 
@@ -190,10 +190,12 @@ def get_species_itemsets():
     sums_rain = defaultdict(int)
     sums_temp = defaultdict(int)
 
+    sums_windsp = defaultdict(int)
+
     for date, obses in seqs.items():
         for obs in obses:
             species, count_mig, count_tot, month_num, \
-                weather_pressure, weather_cover, weather_humidity, weather_rainfall, weather_temp_day, weather_wind, \
+                weather_pressure, weather_cover, weather_humidity, weather_rainfall, weather_temp_day, weather_wind_list, \
                 weather_std_cover, weather_std_temp, weather_std_wind = obs
             if species in species_names:
                 amounts[species] += int(count_tot)
@@ -205,13 +207,16 @@ def get_species_itemsets():
                 if weather_rainfall is not None:
                     sums_rain[species] += int(weather_rainfall) * int(count_tot)
                 sums_temp[species] += int(weather_temp_day) * int(count_tot)
-                # n_temp[species] += int(count_tot)
+                for wind in weather_wind_list:
+                    windspeed = wind[-2:] if wind[-2:].isnumeric() else wind[-1]
+                    sums_windsp[species] += int(windspeed)
 
     pres_list = []
     cover_list = []
     humi_list = []
     rain_list = []
     temp_list = []
+    windsp_list = []
 
     for sp, n in amounts.items():
         pres_list.append(sums_pres[sp] / float(n))
@@ -219,6 +224,7 @@ def get_species_itemsets():
         humi_list.append(sums_humi[sp] / float(n))
         rain_list.append(sums_rain[sp] / float(n))
         temp_list.append(sums_temp[sp] / float(n))
+        windsp_list.append(sums_windsp[sp] / float(n))
 
     pres_limit_low = sorted(pres_list)[int(round(len(pres_list) / 3.0))]
     pres_limit_high = sorted(pres_list)[int(round(len(pres_list) / 3.0 * 2))]
@@ -235,6 +241,9 @@ def get_species_itemsets():
     temp_limit_low = sorted(temp_list)[int(round(len(temp_list) / 3.0))]
     temp_limit_high = sorted(temp_list)[int(round(len(temp_list) / 3.0 * 2))]
 
+    windsp_limit_low = sorted(windsp_list)[int(round(len(windsp_list) / 3.0))]
+    windsp_limit_high = sorted(windsp_list)[int(round(len(windsp_list) / 3.0 * 2))]
+
     print('Pressure limits: '
           '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
           .format(min=min(pres_list), low=pres_limit_low, high=pres_limit_high, max=max(pres_list)))
@@ -250,6 +259,9 @@ def get_species_itemsets():
     print('Temperature limits: '
           '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
           .format(min=min(temp_list), low=temp_limit_low, high=temp_limit_high, max=max(temp_list)))
+    print('Wind speed limits: '
+          '\t low = [{min:.2f}, {low:.2f}] \t average = ({low:.2f}, {high:.2f}] \t high = ({high:.2f}, {max:.2f}]'
+          .format(min=min(windsp_list), low=windsp_limit_low, high=windsp_limit_high, max=max(windsp_list)))
 
     for sp, n in amounts.items():
         for sp_list in species_itemsets:
@@ -273,6 +285,15 @@ def get_species_itemsets():
                 temp_day = sums_temp[sp] / float(n)
                 temp_day = 'low' if temp_day <= temp_limit_low else 'average' if temp_day <= temp_limit_high else 'high'
                 sp_list.append('day temperature %s' % temp_day)
+
+                windsp = sums_temp[sp] / float(n)
+                windsp = 'low' if windsp <= windsp_limit_low else 'average' if windsp <= windsp_limit_high else 'high'
+                sp_list.append('day windspeed %s' % windsp)
+
+    if not use_all_species:
+        # Prune species without characteristics
+        species_itemsets = [itemset for itemset in species_itemsets if
+                            [item for item in itemset if item.startswith('tuntomerkki')]]
 
     return species_itemsets
 
