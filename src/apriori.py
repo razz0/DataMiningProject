@@ -12,6 +12,7 @@ NUM_CORES = 1
 #   - use Numpy arrays where possible
 #   - after that, another try at multiprocessing
 
+
 def support_count(itemset, transactions):
     """
     Count support count for itemset

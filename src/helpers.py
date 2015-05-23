@@ -98,8 +98,7 @@ def get_all_names(finnish_list):
     :return: list of tuples (finnish, scientific, english)
 
     >>> get_all_names(['peippo', 'mustavaris'])
-    [('peippo', 'Fringilla coelebs', 'chaffinch'),
-     ('mustavaris', 'Corvus frugilegus', 'rook')]
+    [('peippo', 'Fringilla coelebs', 'chaffinch'), ('mustavaris', 'Corvus frugilegus', 'rook')]
     '''
 
     taxon_ontology = Graph()
@@ -297,3 +296,15 @@ def get_species_itemsets(use_all_species=False):
 
     return species_itemsets
 
+
+def rules_to_tuples(rules_dicts):
+    """
+    Transform generated rule dicts to tuples
+
+    :param rules_dict:
+    :return:
+    >>> rulez = [{(('isokoskelo',), ('sinisorsa',)): (0.956, 0.894, 1.013, 0.952)}]
+    >>> rules_to_tuples(rulez)
+    [(('isokoskelo',), ('sinisorsa',), 0.956, 0.894, 1.013, 0.952)]
+    """
+    return [list(f.items())[0][0] + list(f.items())[0][1] for f in rules_dicts]
