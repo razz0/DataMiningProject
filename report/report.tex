@@ -115,7 +115,7 @@ Bird species names are written written with finnish, english and scientific name
 
 
 %%%%%%%%%%%%%%%%%%%
-\section{Related work???}
+\section{Related work}
 %%%%%%%%%%%%%%%%%%%
 
 
@@ -133,7 +133,7 @@ The data in original digital format consists of two Excel files, containing half
 However, in this case study we will be using a linked data publication made from the original dataset. The dataset has been transformed~\cite{koho-hyvonen-orni-2014, koho2015gradu} to RDF data model and linked with weather data from nearby weather station in Hanko, Russarö and a bird taxon ontology.
 The linked dataset is structured using the RDF Data Cube Vocabulary~\cite{w3crdfdatacube}, containing distinct data cubes for both daily bird observations and daily weather observations. An example of the bird observation data in this format is given in figure \ref{fig: havaintograafi}.
 
-The used bird taxon ontology~\cite{koho2015gradu} contains finnish conservation statuses for endangered species, a coarse measure of commonness at Halias and characteristics of many finnish species, such as size, beak color and plumage coloring.
+The used bird taxon ontology~\cite{koho2015gradu} contains finnish conservation statuses for endangered species, a coarse measure of commonness at Halias and characteristics of many finnish species, such as size, beak color and plumage coloring. The taxon ontology is open and available\footnote{\url{http://www.ldf.fi/dataset/halias/rdf/halias_taxon_ontology.zip}}.
 
 \begin{figure}[htb]
 \centering
@@ -155,7 +155,7 @@ Next, we will try sequential pattern mining, using the timestamps already presen
 
 The analysis is done using Python 3 and various modules. Plotting and examining the data was done mainly with \emph{IPython notebook}\footnote{\url{http://ipython.org/notebook.html}} and \emph{pandas} (Python Data Analysis Library)\footnote{\url{http://pandas.pydata.org/}}. Conversion from RDF uses \emph{RDFLib}\footnote{\url{https://github.com/RDFLib/rdflib}}. 
 
-Pattern mining implementations are self-made\footnote{\url{https://github.com/razz0/DataMiningProject}}. They include algorithms for finding frequent itemsets, frequent sequential patterns and rule generation. The algorithms are based on the \emph{Apriori algorithm}~\cite{tan2006introduction}.
+Pattern mining implementations are self-made and available online\footnote{\url{https://github.com/razz0/DataMiningProject}}. They include algorithms for finding frequent itemsets, frequent sequential patterns and rule generation. The algorithms are based on the \emph{Apriori algorithm}~\cite{tan2006introduction}.
 
 The pattern mining algorithms are somewhat memory efficient, but are computationally slow. They only use a single CPU core for all calculations and they use standard Python data types, which are flexible, but computationally inefficient. An attempt was made to optimize an Apriori based algorithm for speed, by first profiling the algorithm at execution time and finding the bottlenecks. The pruning step seems to be clearly the most computationally intensive part of the algorithm. % TODO: Tarkasta kirjasta
 
@@ -249,11 +249,12 @@ This is the largest combination of species that is observed in half of the obser
 \subsection{Analysing species itemsets}
 %%%%%%%%%%%%%%%%%%%
 
-We created itemsets of species, where each species is grouped with its' characteristics, conservation status and commonness measure at Halias. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations. 
+We created itemsets of all observed taxa, consisting of species name, its' characteristics, conservation status and commonness measure at Halias. All of this species information is already present in the taxon ontology, but here we transform the information from ontologies to a format that allows us to use common data mining algorithms. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations.
+% TODO: high lift implies something contradictory?
 Table \ref{fig: species_itemsets} shows two examples of a frequent generated rule with the rules' measures~\cite{tan2006introduction} for confidence, support, lift and IS measure.
 The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of the characteristics ontology, describing seasonal occurence of the species in Finland.
 
-\begin{table}[h]
+\begin{table}[ht]
 \centering
 \begin{tabularx}{\textwidth}{| >{\hsize=3.2\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.4\hsize}X | >{\hsize=0.3\hsize}X | >{\hsize=0.6\hsize}X |}
   \hline
@@ -263,13 +264,13 @@ The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of th
   \{Late spring -- early summer, beak dark, head multicoloured, iris dark, upperside atleast 2-coloured\}
   $\rightarrow$
   \{Late summer -- autumn\} 
-  & 0.994 & 0.507 & 1.26 & 0.799 \\
+  & 0.99 & 0.51 & 1.26 & 0.80 \\
   \hline
   \small
   \{Common species at Halias\}
   $\rightarrow$
   \{Late spring -- early summer, Late summer -- autumn\} 
-  & 0.928 & 0.513 & 1.19 & 0.782 \\
+  & 0.93 & 0.51 & 1.19 & 0.78 \\
   \hline
 \end{tabularx}
 \caption{Two examples of frequent rules generated from species itemsets.}
@@ -280,16 +281,50 @@ The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of th
 
 \subsection{Species itemsets with weather variables}
 
-We enriched the species itemsets with weather variables that have been measured each day from sunrise to sunset. For each species we add an average of the weather variables and weight it with the count of birds that have been observed at that day, so that we get an average weather condition in which the species exists.
+The species itemsets were further processed by leaving out all taxa that don't have characteristics annotations, and enriching the itemsets with weather averaged variables. For each species we add an average of the weather variables measured each day from sunrise to sunset and weight them with the count of birds that have been observed that day. So we get an average weather condition in which the species has been observed. All of the averaged weather variables were categorized in three categories: ''low'', ''average'' and ''high''. The categories contain respectively the lowest, middle and highest third of all numbers. The limits of the categories are shown in table \ref{fig: weather cats}.
 
-Pressure limits:         low = [994.25, 1013.03]         average = (1013.03, 1014.48]    high = (1014.48, 1039.00]
-Cloud cover limits:      low = [0.00, 3.90]      average = (3.90, 4.50]          high = (4.50, 8.00]
-Humidity limits:         low = [56.00, 79.69]    average = (79.69, 81.79]        high = (81.79, 93.67]
-Rainfall limits:         low = [0.00, 1.00]      average = (1.00, 1.39]          high = (1.39, 18.00]
-Temperature limits:      low = [-2.40, 8.44]     average = (8.44, 12.14]         high = (12.14, 20.00]
-Wind speed limits:       low = [0.06, 8.00]      average = (8.00, 18.82]         high = (18.82, 2108.97]
+\begin{table}[ht]
+\centering
+\begin{tabularx}{\textwidth}{| >{\hsize=1.0\hsize}X | >{\hsize=1.0\hsize}X | >{\hsize=1.0\hsize}X | >{\hsize=1.0\hsize}X |}
+  \hline
+  \textbf{Variable} & \textbf{Low} & \textbf{Average} & \textbf{High} \\
+  \hline
+  \textbf{Pressure} & [994.3, 1013.0] & (1013.0, 1014.5] & (1014.5, 1039.0] \\
+  \textbf{Cloud cover} & [0.0, 3.9] & (3.9, 4.5] & 4.5, 8.0] \\ 
+  \textbf{Humidity} & [56.0, 79.7] & (79.7, 81.8]        & (81.8, 93.7] \\
+  \textbf{Rainfall} & [0.0, 1.0] & (1.0, 1.4]          & (1.4, 18.0] \\ 
+  \textbf{Temperature} & [-2.4, 8.4]     & (8.4, 12.1]         & (12.1, 20.0] \\ 
+  \textbf{Wind speed} & [0.1, 8.0]      & (8.0, 18.8]         & (18.8, 2109.0] \\
+  \hline
+\end{tabularx}
+\caption{Weather variable category limits derived from averaged weather variables by dividing them into three equally sized chunks.}
+\label{fig: weather cats}
+\end{table}
 
+We generated association rules from these species itemsets. Some examples of these rules with their measurements are given in table \ref{fig: species_itemsets_2_rules}.
 
+\begin{table}[ht]
+\centering
+\begin{tabularx}{\textwidth}{| >{\hsize=3.2\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.4\hsize}X | >{\hsize=0.3\hsize}X | >{\hsize=0.6\hsize}X |}
+  \hline
+  \textbf{Rule} & \small \textbf{Con\-fi\-den\-ce} & \small \textbf{Sup\-port} & \small \textbf{Lift} & \small \textbf{IS measure}\\
+  \hline
+  \small
+  \{Rare at Halias\}
+  $\rightarrow$
+  \{Head multicoloured, Late summer -- autumn, Upperside atleast two-coloured, Late spring -- early summer\} 
+  & 0.89 & 0.30 & 0.99 & 0.55 \\
+  \hline
+  \small
+  \{a\}
+  $\rightarrow$
+  \{b\} 
+  & 0 & 0 & 0 & 0 \\
+  \hline
+\end{tabularx}
+\caption{Some association rules generated from species itemsets.}
+\label{fig: species_itemsets_2_rules}
+\end{table}
 
 
 %%%%%%%%%%%%%%%%%%%
@@ -301,6 +336,7 @@ Wind speed limits:       low = [0.06, 8.00]      average = (8.00, 18.82]        
 %%%%%%%%%%%%%%%%%%%
 \section{Discussion}
 %%%%%%%%%%%%%%%%%%%
+
 
 
 
