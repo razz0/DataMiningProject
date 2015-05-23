@@ -176,7 +176,7 @@ def get_species_itemsets(use_all_species=False):
                 elif not label.language:
                     ancestor_label = str(label)
 
-            if ancestor_label not in ['Aves', 'Animalia']:
+            if ancestor_label and ancestor_label not in ['Aves', 'Animalia']:
                 ancestor_list.append(ancestor_label)
 
         this_species += ancestor_list[1:]
