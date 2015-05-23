@@ -26,5 +26,5 @@ print('\nSupport {:.3f} frequent itemsets:\n'.format(args.minsup))
 print(len(freq_items))
 print(freq_items[-1])
 
-joblib.dump(freq_items, helpers.DATA_DIR + 'freq_species_itemsets_{:.3f}.pkl'.format(args.minsup))
+joblib.dump(freq_items, helpers.DATA_DIR + 'freq_species_itemsets_{:.3f}_NEW.pkl'.format(args.minsup))
 
