@@ -166,6 +166,21 @@ def get_species_itemsets(use_all_species=False):
 
         this_species.append(finnish)
 
+        # Get upper taxa
+        ancestor_list = []
+        for ancestor in taxon_ontology.transitive_objects(sp, nsTaxMeOn['isPartOfHigherTaxon']):
+            ancestor_label = None
+            for label in taxon_ontology.objects(ancestor, RDFS.label):
+                if label.language == 'fi' and not ancestor_label:
+                    ancestor_label = str(label)
+                elif not label.language:
+                    ancestor_label = str(label)
+
+            if ancestor_label not in ['Aves', 'Animalia']:
+                ancestor_list.append(ancestor_label)
+
+        this_species.append(ancestor_list[1:])
+
         conservation_status = next(taxon_ontology.objects(sp, nsHaliasSchema['hasConservationStatus2010']), False)
         if conservation_status:
             this_species.append(local_name(str(conservation_status)))
