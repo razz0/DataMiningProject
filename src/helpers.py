@@ -188,8 +188,10 @@ def get_species_itemsets(use_all_species=False):
         if rarity:
             this_species.append(local_name(str(rarity)))
         charas = taxon_ontology.objects(sp, nsHaliasSchema['hasCharacteristic'])
+        charas = ['tuntomerkki %s' % local_name(str(chara)) for chara in charas]
+
         if charas:
-            this_species += ['tuntomerkki %s' % local_name(str(chara)) for chara in charas]
+            this_species += charas
 
         if charas or use_all_species:
             # Take only species with characteristics
