@@ -179,7 +179,7 @@ def get_species_itemsets(use_all_species=False):
             if ancestor_label not in ['Aves', 'Animalia']:
                 ancestor_list.append(ancestor_label)
 
-        this_species.append(ancestor_list[1:])
+        this_species += ancestor_list[1:]
 
         conservation_status = next(taxon_ontology.objects(sp, nsHaliasSchema['hasConservationStatus2010']), False)
         if conservation_status:
