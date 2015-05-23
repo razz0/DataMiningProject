@@ -176,9 +176,15 @@ def get_species_itemsets(use_all_species=False):
         if charas:
             this_species += ['tuntomerkki %s' % local_name(str(chara)) for chara in charas]
 
+        if charas or use_all_species:
             # Take only species with characteristics
-        species_itemsets.append(this_species)
-        species_names.append(finnish)
+            species_itemsets.append(this_species)
+            species_names.append(finnish)
+
+    # if not use_all_species:
+    #     # Prune species without characteristics
+    #     species_itemsets = [itemset for itemset in species_itemsets if
+    #                         [item for item in itemset if item.startswith('tuntomerkki')]]
 
     seqs = read_observation_sequences()
 
@@ -288,11 +294,6 @@ def get_species_itemsets(use_all_species=False):
                 windsp = sums_temp[sp] / float(n)
                 windsp = 'low' if windsp <= windsp_limit_low else 'average' if windsp <= windsp_limit_high else 'high'
                 sp_list.append('day windspeed %s' % windsp)
-
-    if not use_all_species:
-        # Prune species without characteristics
-        species_itemsets = [itemset for itemset in species_itemsets if
-                            [item for item in itemset if item.startswith('tuntomerkki')]]
 
     return species_itemsets
 
