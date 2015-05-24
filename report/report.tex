@@ -71,6 +71,11 @@
 \level{Technical report}
 
 \abstract{
+This report examines the use of data mining techniques to find interesting patterns from a bird observatory dataset.
+
+The bird observations are modeled as an RDF Data Cube dataset and linked with weather data from nearby weather station in Hanko, Russarö and a bird taxon ontology. This RDF data is transformed to simpler formats for association analysis, by grouping together relevant pieces of information from the RDF datasets and related ontologies. This allows to analyse the information directly with pattern mining algorithms and association rule generation. Using these methods, we were able to find some interesting patterns from the dataset.
+
+Data mining approach can be applied to nature observation datasets to find interesting patterns. Organising the data for pattern mining is however not trivial as there are numerous possible ways to do this.
 }
 
 \keywords{}
@@ -109,7 +114,7 @@
 \section{Introduction}
 %%%%%%%%%%%%%%%%%%%
 
-This technical report examines the use of data mining techniques~\cite{tan2006introduction} to find interesting patterns from a bird observatory dataset.
+This report examines the use of data mining techniques~\cite{tan2006introduction} to find interesting patterns from a bird observatory dataset. Section 2 shows some related work. Section 3 explains the structure and content of the dataset. Section 4 explains the used analysis methods and section 5 lays out results obtained using those methods. Sections 6 and 7 provide conclusions and discussion.
 
 First occurences of bird species names are written written with finnish, english and scientific names, to be more accessible to different audiences. The format used is <finnish name, \emph{scientific name}, english name>.
 
@@ -151,22 +156,23 @@ The used bird taxon ontology~\cite{koho2015gradu} contains finnish conservation 
 \section{Methodology}
 %%%%%%%%%%%%%%%%%%%
 
-For association analysis we take a subset of the dimensions of the data cubes and transform these to market basket transactions or sequence database. In this transformation it is easy to combine bird observations, weather observations and information from the used ontologies. The transformed data is stored in \emph{JSON} or text files, which is then read in when doing analysis.
+For association analysis we take a subset of the dimensions of the data cubes and transform these to market basket transactions or sequence database~\cite{tan2006introduction}. In this transformation it is easy to combine bird observations, weather observations and information from the used ontologies. The transformed data is stored in \emph{JSON} or text files, which is then read in when doing analysis.
 
-For simplicity, we first try to find interesting patterns using just the bird observations. We will do frequent pattern mining to find the most frequently observed species and species combinations, without using the daily counts. We could also use the observed counts and generate quantitative association rules, which might reveal some interesting patterns, but is probably very slow to calculate.
+We first analysed only the bird observations without any related information. Simple visualizations provide some insight into the occurence of different species. Frequent pattern mining was used to find the most frequently observed species and species combinations, without using the daily counts.
 
-Next, we will try sequential pattern mining, using the timestamps already present in the data. This would probably reveal something interesting, but is again very slow to calculate.
+A sequential pattern discovery~\cite{tan2006introduction} attempt was also made using daily observed species as sequential patterns, where each year was used as a distinct sequence. The data set as sequence data was too large to get any good results in feasible time, and as the initial results did not seem to provide any interesting information, this attempt was not pursued further.
+%7419 days, 378 taxa
 
-The analysis is done using Python 3 and various modules. Plotting and examining the data was done mainly with \emph{IPython notebook}\footnote{\url{http://ipython.org/notebook.html}} and \emph{pandas} (Python Data Analysis Library)\footnote{\url{http://pandas.pydata.org/}}. Conversion from RDF uses \emph{RDFLib}\footnote{\url{https://github.com/RDFLib/rdflib}}. 
+The analysis is done using Python 3 and various modules. Initial examining the data was done mostly with \emph{IPython notebook}\footnote{\url{http://ipython.org/notebook.html}} and \emph{pandas} (Python Data Analysis Library)\footnote{\url{http://pandas.pydata.org/}}. Conversion from RDF uses \emph{RDFLib}\footnote{\url{https://github.com/RDFLib/rdflib}}. 
 
 Pattern mining implementations are self-made and available online\footnote{\url{https://github.com/razz0/DataMiningProject}}. They include algorithms for finding frequent itemsets, frequent sequential patterns and rule generation. The algorithms are based on the \emph{Apriori algorithm}~\cite{tan2006introduction}.
 
-The pattern mining algorithms are somewhat memory efficient, but are computationally slow. They only use a single CPU core for all calculations and they use standard Python data types, which are flexible, but computationally inefficient. An attempt was made to optimize an Apriori based algorithm for speed, by first profiling the algorithm at execution time and finding the bottlenecks. The pruning step seems to be clearly the most computationally intensive part of the algorithm. % TODO: Tarkasta kirjasta
+The implemented pattern mining algorithms are somewhat memory efficient, but are computationally slow. They only use a single CPU core for all calculations and they use standard Python data types, which are flexible, but computationally inefficient. An attempt was made to optimize an Apriori based algorithm for speed, by first profiling the algorithm at execution time and finding the bottleneck, which is the pruning step.
 
-We attempted to optimize the pruning by using multiple processes, running in different CPU cores, using Python module Joblib\footnote{\url{https://pythonhosted.org/joblib/}}, which provides an improved interface to Python standard library \emph{multiprocessing} module. However, the processes running in parallel cannot access shared resources in memory, leading to extensive copying of large data structures and longer execution times. This could be overcome by switching to use data structures from NumPy\footnote{\url{http://www.numpy.org/}}, which are optimized for speed and allow shared access from multiple processes.
+We tried to optimize the pruning by using multiple processes, running in different CPU cores, using Python module Joblib\footnote{\url{https://pythonhosted.org/joblib/}}, which provides an improved interface to Python standard library \emph{multiprocessing} module. However, the processes running in parallel cannot access shared resources in memory, leading to extensive copying of large data structures and longer execution times. This could be overcome by switching to use data structures from NumPy\footnote{\url{http://www.numpy.org/}}, which are optimized for speed and allow shared access for multiple processes.
 
+\emph{Orange Data Mining Toolbox}\footnote{\url{http://orange.biolab.si/}} was also tried for analysis, but it wasn't able to cope with large market basket transaction datasets.
 
-\emph{Orange Data Mining Toolbox}\footnote{\url{http://orange.biolab.si/}} was also tried for analysis, but it wasn't able to cope with even simple market basket transaction data of all the daily observed taxa in the dataset (7419 days, 378 taxa).
 
 
 %%%%%%%%%%%%%%%%%%%
@@ -180,7 +186,14 @@ In this section we look at results of applying data mining methods to the datase
 \subsection{Visualization}
 %%%%%%%%%%%%%%%%%%%
 
-Visualizations of the data can easily convey important patterns in the data. Yearly occurence of species <peltosirkku, \emph{Emberiza hortulana}, ortolan bunting> if given in table \ref{fig: embhor_weeks}. This shows a common yearly occurence of a migratory species not found at the bird observatory during breeding season. Most species are more frequent during autumn migration than during spring migration~\cite{lehikoinen2000phenology}. % TODO: Lähde
+\begin{figure}[htb]
+\centering
+\includegraphics[clip=true, width=0.9\textwidth]{embhor_weeks}
+\caption{Yearly occurence of ortolan bunting. X-axis contains week number, y-axis contains total observed individuals for week number.}
+\label{fig: embhor_weeks}
+\end{figure}
+
+Visualizations of the data can easily convey important patterns in the data. Yearly occurence of species <peltosirkku, \emph{Emberiza hortulana}, ortolan bunting> if given in figure \ref{fig: embhor_weeks}. This shows a common yearly occurence of a migratory species not found at the bird observatory during breeding season. Most species are more frequent during autumn migration than during spring migration~\cite{lehikoinen2000phenology}.
 
 %\begin{figure}[htb]
 %\centering
@@ -189,25 +202,12 @@ Visualizations of the data can easily convey important patterns in the data. Yea
 %\label{fig: embhor_years}
 %\end{figure}
 
-%Foo\ref{fig: phacar_years}.
-
 %\begin{figure}[htb]
 %\centering
 %\includegraphics[clip=true, width=\textwidth]{phacar_years}
 %\caption{phacar years}
 %\label{fig: phacar_years}
 %\end{figure}
-
-%Bar\ref{fig: embhor_weeks}.
-
-\begin{figure}[htb]
-\centering
-\includegraphics[clip=true, width=\textwidth]{embhor_weeks}
-\caption{Yearly occurence of ortolan bunting. X-axis contains week number, y-axis contains total observed individuals for week number.}
-\label{fig: embhor_weeks}
-\end{figure}
-
-%Baz\ref{fig: phacar_weeks}.
 
 %\begin{figure}[htb]
 %\centering
@@ -221,7 +221,7 @@ Visualizations of the data can easily convey important patterns in the data. Yea
 \subsection{Frequent itemsets}
 %%%%%%%%%%%%%%%%%%%
 
-Analysing daily observed species as market basket transactions, we can examine the most commonly observed species and species combinations.
+By using an algorithmic analysis of the dataset using daily observed species as market basket transactions, we can examine the most commonly observed species and species combinations. An implementation of Apriori algorithm was used to get itemsets that occur frequently in the transactions.
 
 The most common species is <varis, \emph{Corvus corone}, carrion crow> with support 0.951. For support $0.5$, the largest frequent itemset consists of the following species:
 
@@ -277,10 +277,9 @@ We can create some association rules~\cite{tan2006introduction} that better expl
 \subsection{Analysing species itemsets}
 %%%%%%%%%%%%%%%%%%%
 
-We created itemsets of all observed species. This creates 302 itemsets which consist of species name, its' characteristics, conservation status and commonness measure at Halias. All of the information are represented as strings. Many species lack characteristics annotations and for those species the itemsets are rather small. 
+For another type of analysis we created itemsets of all observed species. This creates 302 itemsets which consist of species name, its' characteristics, conservation status and commonness measure at Halias. All of the information are represented as strings. Many species lack characteristics annotations and for those species the itemsets are rather small.
 
-All species information is present in the taxon ontology, but we transform the information from ontologies to a format that allows us to use common data mining algorithms. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations.
-% TODO: high lift implies something contradictory?
+All used species information is present in the taxon ontology and we transform the information into the itemsets as strings. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations.
 
 Table \ref{fig: species_itemsets} shows two examples of a frequent generated rule with the rules' descriptive measures.
 The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of the characteristics ontology, describing seasonal occurence of the species in Finland.
@@ -310,7 +309,7 @@ The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of th
 
 
 
-\subsection{Species itemsets with weather variables}
+\subsection{Including weather variables}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 The species itemsets were further processed by leaving out all taxa that don't have characteristics annotations, and enriching the itemsets with the names of upper levels of taxon hierarchy. After this process we have a total of 239 itemsets, which are all created of species, as other taxonomic ranks lack characteristics annotations.
@@ -427,18 +426,17 @@ Also all bird of prey of different sizes migrate mostly during clear, sunny weat
 \section{Conclusions}
 %%%%%%%%%%%%%%%%%%%
 
-Data mining approach can be applied to biodiversity data to find interesting patterns. There are numerous possibilities how to organize the data into itemsets for frequent pattern mining. By grouping relevant information of each species to a single itemset, we can efficiently analyse them for frequent patterns.
-
-Semantically linked datasets and ontologies related to them can be used to easily build itemsets for association analysis.
+Data mining approach can be applied to biodiversity data to find interesting patterns. There are numerous possibilities how to organize the data into itemsets for pattern mining. By grouping relevant information of each species to a single itemset, we can efficiently analyse them for frequent patterns. Semantically linked datasets and related ontologies can be used to easily build the itemsets.
 
 %%%%%%%%%%%%%%%%%%%
 \section{Discussion}
 %%%%%%%%%%%%%%%%%%%
 
-It could be interesting for frequent rule generation to provide also monthly occurence at the bird observatory to species itemsets. This would allow for analysing which species characteristics are frequent during different months.
+It could be interesting for frequent rule generation to provide also monthly occurence at the bird observatory to species itemsets. The occurence information could use some quantitative categorization. This would allow for analysing which species characteristics are frequent during different months.
 
 Also other kind of information, like a trend of yearly observation counts could be added to itemsets, to analyse what kind of trends do endangered species have. Also there could possibly be found unexpected association rules for species with clear negative or positive trends.
 
+Directly including quantitative occurence data of each taxon in the daily observation itemsets could provide some interesting patterns.
 
 \pagebreak
 
