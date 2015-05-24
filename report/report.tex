@@ -111,13 +111,17 @@
 
 This technical report examines the use of data mining techniques~\cite{tan2006introduction} to find interesting patterns from a bird observatory dataset.
 
-Bird species names are written written with finnish, english and scientific names, to be accessible to different audiences. The format used is <finnish name, \emph{scientific name}, english name>.
+First occurences of bird species names are written written with finnish, english and scientific names, to be more accessible to different audiences. The format used is <finnish name, \emph{scientific name}, english name>.
 
 
 %%%%%%%%%%%%%%%%%%%
 \section{Related work}
 %%%%%%%%%%%%%%%%%%%
 
+Kelling et al. have used exploratory analysis to find patterns in observational records of wintering birds in North America~\cite{kelling2009data}. They also lay out the importance of data-driven approaches in biodiversity research.
+Caruana et al.~\cite{caruana2006mining} and Hochaka et al.~\cite{hochachka2007data} apply data mining and machine learning to bird observation datasets. Also other articles use classification models to predict occurence of bird species\cite{goetz2014relative, mentch2014ensemble}.
+
+The dataset used in this report has already been presented in earlier work~\cite{koho-hyvonen-orni-2014, koho2015gradu}, including some exploratory analysis with visualizations.
 
 %%%%%%%%%%%%%%%%%%%
 \section{Dataset}
@@ -166,50 +170,52 @@ We attempted to optimize the pruning by using multiple processes, running in dif
 
 
 %%%%%%%%%%%%%%%%%%%
-\section{Analysis results}
+\section{Results}
 %%%%%%%%%%%%%%%%%%%
 
-The dataset is quite large for many association analysis tasks, which is why the focus has been on using simple methods.
+In this section we look at results of applying data mining methods to the dataset.
+
 
 
 \subsection{Visualization}
 %%%%%%%%%%%%%%%%%%%
 
-Visualizations of the data can easily convey important patterns in the data. \ref{fig: embhor_years}
+Visualizations of the data can easily convey important patterns in the data. Yearly occurence of species <peltosirkku, \emph{Emberiza hortulana}, ortolan bunting> if given in table \ref{fig: embhor_weeks}. This shows a common yearly occurence of a migratory species not found at the bird observatory during breeding season. Most species are more frequent during autumn migration than during spring migration~\cite{lehikoinen2000phenology}. % TODO: Lähde
 
-\begin{figure}[htb]
-\centering
-\includegraphics[clip=true, width=\textwidth]{embhor_years}
-\caption{embhor years}
-\label{fig: embhor_years}
-\end{figure}
+%\begin{figure}[htb]
+%\centering
+%\includegraphics[clip=true, width=\textwidth]{embhor_years}
+%\caption{embhor years}
+%\label{fig: embhor_years}
+%\end{figure}
 
-Foo\ref{fig: phacar_years}.
+%Foo\ref{fig: phacar_years}.
 
-\begin{figure}[htb]
-\centering
-\includegraphics[clip=true, width=\textwidth]{phacar_years}
-\caption{phacar years}
-\label{fig: phacar_years}
-\end{figure}
+%\begin{figure}[htb]
+%\centering
+%\includegraphics[clip=true, width=\textwidth]{phacar_years}
+%\caption{phacar years}
+%\label{fig: phacar_years}
+%\end{figure}
 
-Bar\ref{fig: embhor_weeks}.
+%Bar\ref{fig: embhor_weeks}.
 
 \begin{figure}[htb]
 \centering
 \includegraphics[clip=true, width=\textwidth]{embhor_weeks}
-\caption{embhor weeks}
+\caption{Yearly occurence of ortolan bunting. X-axis contains week number, y-axis contains total observed individuals for week number.}
 \label{fig: embhor_weeks}
 \end{figure}
 
-Baz\ref{fig: phacar_weeks}.
+%Baz\ref{fig: phacar_weeks}.
 
-\begin{figure}[htb]
-\centering
-\includegraphics[clip=true, width=\textwidth]{phacar_weeks}
-\caption{phacar weeks}
-\label{fig: phacar_weeks}
-\end{figure}
+%\begin{figure}[htb]
+%\centering
+%\includegraphics[clip=true, width=\textwidth]{phacar_weeks}
+%\caption{phacar weeks}
+%\label{fig: phacar_weeks}
+%\end{figure}
+
 
 
 \subsection{Frequent itemsets}
@@ -237,24 +243,49 @@ The most common species is <varis, \emph{Corvus corone}, carrion crow> with supp
 This is the largest combination of species that is observed in half of the observation days. These species are very common and observable almost all year round. Individually all of the listed species have support over $0.75$.
 
 
-%\subsection{Frequent taxon sequences}
+
+\subsection{Association rules}
 %%%%%%%%%%%%%%%%%%%
 
+We can create some association rules~\cite{tan2006introduction} that better explain the occurence of species at same dates. Examples of association rules with species <uuttukyyhky, \emph{Columba oenas}, stock dove> and <sepelkyyhky, \emph{Columba palumbus}, woodpigeon>, are shown in table \ref{fig: obs_itemset_rules}, which contains some rules with their measures~\cite{tan2006introduction} for confidence, support, lift and IS measure. The direction of the rule influences some of the given measures, but not all. Confidence is a frequentistic probability of the consequent happening if the antecedent has happened. So if a stock dove is observed it's very likely that a woodpigeon is also observed during the day, but not the other way around. Support gives the ratio of itemsets that contain both the antecedent and the consequent. Lift measures if the antecedent and consequent are dependent of each other, where value 1 implies independence. So woodpigeon and stock dove are strongly dependent according to the observations. The IS measure is large when lift and support are large.
 
-%\subsection{Rule generation}
-%%%%%%%%%%%%%%%%%%%
+\begin{table}[ht]
+\centering
+\begin{tabularx}{\textwidth}{| >{\hsize=2.4\hsize}X | >{\hsize=0.7\hsize}X | >{\hsize=0.7\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.7\hsize}X |}
+  \hline
+  \textbf{Rule} & \small \textbf{Con\-fi\-den\-ce} & \small \textbf{Sup\-port} & \small \textbf{Lift} & \small \textbf{IS measure}\\
+  \hline
+  \small
+  \{woodpigeon\}
+  $\rightarrow$
+  \{stock dove\}
+  & 0.49 & 0.22 & 1.86 & 0.63 \\
+  \hline
+  \small
+  \{stock dove\}
+  $\rightarrow$
+  \{woodpigeon\}
+  & 0.82 & 0.22 & 1.86 & 0.63 \\
+  \hline
+\end{tabularx}
+\caption{Some association rules of species occurence at same dates.}
+\label{fig: obs_itemset_rules}
+\end{table}
 
-%By generating some high confidence rules~\cite{tan2006introduction} from frequent itemsets we can get
+
 
 \subsection{Analysing species itemsets}
 %%%%%%%%%%%%%%%%%%%
 
-We created itemsets of all observed taxa, consisting of species name, its' characteristics, conservation status and commonness measure at Halias. All of this species information is already present in the taxon ontology, but here we transform the information from ontologies to a format that allows us to use common data mining algorithms. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations.
+We created itemsets of all observed species. This creates 302 itemsets which consist of species name, its' characteristics, conservation status and commonness measure at Halias. All of the information are represented as strings. Many species lack characteristics annotations and for those species the itemsets are rather small. 
+
+All species information is present in the taxon ontology, but we transform the information from ontologies to a format that allows us to use common data mining algorithms. Analysing these itemsets as market basket transactions we can infer frequent rules, but these mostly tell us about the used characteristics ontology and its' annotations.
 % TODO: high lift implies something contradictory?
-Table \ref{fig: species_itemsets} shows two examples of a frequent generated rule with the rules' measures~\cite{tan2006introduction} for confidence, support, lift and IS measure.
+
+Table \ref{fig: species_itemsets} shows two examples of a frequent generated rule with the rules' descriptive measures.
 The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of the characteristics ontology, describing seasonal occurence of the species in Finland.
 
-\begin{table}[ht]
+\begin{table}[htb]
 \centering
 \begin{tabularx}{\textwidth}{| >{\hsize=3.2\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.4\hsize}X | >{\hsize=0.3\hsize}X | >{\hsize=0.6\hsize}X |}
   \hline
@@ -273,17 +304,20 @@ The ''Late spring -- early summer'' and ''Late summer -- autumn'' are part of th
   & 0.93 & 0.51 & 1.19 & 0.78 \\
   \hline
 \end{tabularx}
-\caption{Two examples of frequent rules generated from species itemsets.}
+\caption{Two examples of frequent association rules generated from species itemsets.}
 \label{fig: species_itemsets}
 \end{table}
 
 
 
 \subsection{Species itemsets with weather variables}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-The species itemsets were further processed by leaving out all taxa that don't have characteristics annotations, and enriching the itemsets with weather averaged variables. For each species we add an average of the weather variables measured each day from sunrise to sunset and weight them with the count of birds that have been observed that day. So we get an average weather condition in which the species has been observed. All of the averaged weather variables were categorized in three categories: ''low'', ''average'' and ''high''. The categories contain respectively the lowest, middle and highest third of all numbers. The limits of the categories are shown in table \ref{fig: weather cats}.
+The species itemsets were further processed by leaving out all taxa that don't have characteristics annotations, and enriching the itemsets with the names of upper levels of taxon hierarchy. After this process we have a total of 239 itemsets, which are all created of species, as other taxonomic ranks lack characteristics annotations.
 
-\begin{table}[ht]
+For each species we also add an average of the weather variables measured each day from sunrise to sunset and weight them with the total daily count of the species. So we get an average weather condition in which the species has been observed. All of the averaged weather variables were categorized in three categories: ''low'', ''average'' and ''high''. The categories contain respectively the lowest, middle and highest third of all numbers. The limits of the categories are shown in table \ref{fig: weather cats}.
+
+\begin{table}[htb]
 \centering
 \begin{tabularx}{\textwidth}{| >{\hsize=1.0\hsize}X | >{\hsize=1.0\hsize}X | >{\hsize=1.0\hsize}X | >{\hsize=1.0\hsize}X |}
   \hline
@@ -301,9 +335,11 @@ The species itemsets were further processed by leaving out all taxa that don't h
 \label{fig: weather cats}
 \end{table}
 
-We generated association rules from these species itemsets. Some examples of these rules with their measurements are given in table \ref{fig: species_itemsets_2_rules}.
+The itemset sizes vary between each species, consisting of 36 to 66 items. The size depends on the amount of characteristics annotations, how many upper taxa it has in the taxon ontology and whether it has a conservation status or not.
 
-\begin{table}[ht]
+We generated association rules from these species itemsets using an Apriori-based algorithm. The rule generation included using frequent itemsets with minimum support $0.3$ and using minimum confidence of $0.5$, which resulted in $105,949$ association rules. Some examples of the generated rules with their measurements are given in table \ref{fig: species_itemsets_2_rules}. The last rule in the table is one that has very high lift, indicating a strong dependency between species of the order <varpuslinnut, \emph{Passeriformes}, passerine> and some characteristics.
+
+\begin{table}[htb]
 \centering
 \begin{tabularx}{\textwidth}{| >{\hsize=3.2\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.4\hsize}X | >{\hsize=0.3\hsize}X | >{\hsize=0.6\hsize}X |}
   \hline
@@ -312,18 +348,78 @@ We generated association rules from these species itemsets. Some examples of the
   \small
   \{Rare at Halias\}
   $\rightarrow$
-  \{Head multicoloured, Late summer -- autumn, Upperside atleast two-coloured, Late spring -- early summer\} 
+  \{Head multicoloured, late summer -- autumn, upperside atleast two-coloured, late spring -- early summer\} 
   & 0.89 & 0.30 & 0.99 & 0.55 \\
   \hline
   \small
-  \{a\}
+  \{Common at Halias, walks\}
   $\rightarrow$
-  \{b\} 
-  & 0 & 0 & 0 & 0 \\
+  \{Wind speed average, underside atleast two-coloured\} 
+  & 0.80 & 0.38 & 1.02 & 0.62 \\
+  \hline
+  \small
+  \{Beak dark, iris dark\}
+  $\rightarrow$
+  \{Upperside atleast two-coloured, common at Halias, underside atleast two-coloured\} 
+  & 0.63 & 0.45 & 1.09 & 0.70 \\
+  \hline
+  \small
+  \{Passerine\}
+  $\rightarrow$
+  \{Head multicoloured, legs short, late summer -- autumn, beak sharp, iris dark, upperside atleast two-coloured, late spring -- early summer\} 
+  & 0.84 & 0.31 & 2.09 & 0.81 \\
   \hline
 \end{tabularx}
 \caption{Some association rules generated from species itemsets.}
 \label{fig: species_itemsets_2_rules}
+\end{table}
+
+% TODO: Sääntöjen vertailu: 
+% valtava -> matala ilmanpaine
+% valtava -> korkea ilmanpaine
+
+% valtava -> tuulen nopeudet
+
+Table \ref{fig: handmade rules} shows some relationships between bird sizes and weather variables. From the confidence and lift we can see that the they correlate to air pressure with different sign depending on the bird size. Larger birds are more dependent on clear weather when migrating, and higher air pressure indicates clearer weather. Small birds are not very much dependent on the weather when migrating, and also local rainfall, which is associated with low air pressure, may cause migrants to pause the migration, at which time they may be feeding locally at Halias and thus be easily observed. The rules seem to support these assumptions.
+Also all bird of prey of different sizes migrate mostly during clear, sunny weather and this can be stronly seen in association rules including the order <petolinnut, \emph{Falconiformes}, birds of prey>. No species of the order has an average observation air pressure in the ''low'' category, although some species of the order are not included in the analysis as they are lacking characteristics annotations and thus are not included in the itemsets.
+
+
+\begin{table}[htb]
+\centering
+\begin{tabularx}{\textwidth}{| >{\hsize=3.2\hsize}X | >{\hsize=0.5\hsize}X | >{\hsize=0.4\hsize}X | >{\hsize=0.3\hsize}X | >{\hsize=0.6\hsize}X |}
+  \hline
+  \textbf{Rule} & \small \textbf{Con\-fi\-den\-ce} & \small \textbf{Sup\-port} & \small \textbf{Lift} & \small \textbf{IS measure}\\
+  \hline
+  \small
+  \{Size huge\} $\rightarrow$ \{Air pressure low\} 		& 0.15 & 0.01 & 0.45 & 0.06 \\
+  \hline
+  \small
+  \{Size huge\} $\rightarrow$ \{Air pressure average\} 	& 0.38 & 0.02 & 1.16 & 0.16 \\
+  \hline
+  \small
+  \{Size huge\} $\rightarrow$ \{Air pressure high\} 	& 0.46 & 0.03 & 1.40 & 0.19 \\
+  \hline
+  \small
+  \{Size small\} $\rightarrow$ \{Air pressure low\} 	& 0.38 & 0.13 & 1.11 & 0.39 \\
+  \hline
+  \small
+  \{Size small\} $\rightarrow$ \{Air pressure average\} & 0.40 & 0.14 & 1.21 & 0.41 \\
+  \hline
+  \small
+  \{Size small\} $\rightarrow$ \{Air pressure high\} 	& 0.22 & 0.08 & 0.67 & 0.23 \\
+  \hline
+  \small
+  \{Bird of prey\} $\rightarrow$ \{Air pressure low\} 	& 0.0 & 0.0 & 0.0 & 0.0 \\
+  \hline
+  \small
+  \{Bird of prey\} $\rightarrow$ \{Air pressure average\} 	& 0.39 & 0.03 & 1.18 & 0.19 \\
+  \hline
+  \small
+  \{Bird of prey\} $\rightarrow$ \{Air pressure high\} 	& 0.61 & 0.05 & 1.85 & 0.29 \\
+  \hline
+\end{tabularx}
+\caption{Some association rules between bird sizes and weather variables.}
+\label{fig: handmade rules}
 \end{table}
 
 
@@ -331,13 +427,17 @@ We generated association rules from these species itemsets. Some examples of the
 \section{Conclusions}
 %%%%%%%%%%%%%%%%%%%
 
+Data mining approach can be applied to biodiversity data to find interesting patterns. There are numerous possibilities how to organize the data into itemsets for frequent pattern mining. By grouping relevant information of each species to a single itemset, we can efficiently analyse them for frequent patterns.
 
+Semantically linked datasets and ontologies related to them can be used to easily build itemsets for association analysis.
 
 %%%%%%%%%%%%%%%%%%%
 \section{Discussion}
 %%%%%%%%%%%%%%%%%%%
 
+It could be interesting for frequent rule generation to provide also monthly occurence at the bird observatory to species itemsets. This would allow for analysing which species characteristics are frequent during different months.
 
+Also other kind of information, like a trend of yearly observation counts could be added to itemsets, to analyse what kind of trends do endangered species have. Also there could possibly be found unexpected association rules for species with clear negative or positive trends.
 
 
 \pagebreak
