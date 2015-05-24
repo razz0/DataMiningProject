@@ -54,6 +54,9 @@ class RuleGenerator(object):
 
         return a.get_support(list(set(antecedent) | set(consequent)), self.transactions) / denominator
 
+    def get_rule_measurements(self, ant, con):
+        return self.confidence(ant, con), self.support(ant, con), self.lift(ant, con), self.IS_measure(ant, con)
+
     def rule_generation(self, minconf, itemsets=None, maxconf=None, fixed_consequents=(), verbose=False):
         """
         Generate rules ({A, B} -> {C}) from frequent itemsets
@@ -92,3 +95,5 @@ class RuleGenerator(object):
             print('Found %i frequent rules' % (len(rules)))
 
         return rules
+
+
