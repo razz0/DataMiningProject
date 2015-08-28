@@ -315,6 +315,13 @@ def get_species_itemsets(use_all_species=False):
     return species_itemsets
 
 
+def dump_species_itemsets(itemsets):
+
+    with open(DATA_DIR + 'species_itemsets.basket', mode='wt') as file:
+        file.writelines([' '.join(itemset) + "\n" for itemset in itemsets])
+        # file.writelines([' '.join(item) for itemset in itemsets for item in itemset])
+
+
 def rules_to_tuples(rules_dicts):
     """
     Transform generated rule dicts to tuples
